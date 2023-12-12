@@ -1,0 +1,78 @@
+import '../food/snack.dart';
+import '../food/lunch.dart';
+import '../food/recipe.dart';
+import '../food/dinner.dart';
+import '../food/breakfast.dart';
+import '../profile/profile.dart';
+import 'home_widgets/app_bar.dart';
+import 'home_widgets/side_bar.dart';
+import 'home_widgets/custom_box.dart';
+import 'home_widgets/today_text.dart';
+import 'home_widgets/current_day.dart';
+import 'package:flutter/material.dart';
+import '../analytics/analyticsPage.dart';
+import 'home_widgets/today_for_section.dart';
+import 'home_widgets/looking_for_section.dart';
+import 'home_widgets/daily_advice_section.dart';
+import 'package:student_fit/screens/login/login.dart';
+import 'package:student_fit/screens/schedule/schedulePage.dart';
+import 'package:student_fit/screens/schedule/calendarPage.dart';
+import 'package:student_fit/screens/welcomePages/widgets/app_text_styles.dart';
+
+
+
+class HomePage extends StatelessWidget {
+  final String appBarTitle;
+
+  const HomePage({Key? key, required this.appBarTitle}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      routes: {
+        '/breakfast': (context) => BreakfastPage(),
+        '/lunch': (context) => LunchPage(),
+        '/dinner': (context) => DinnerPage(),
+        '/snack': (context) => SnackPage(),
+        '/homepage': (context) => const HomePage(
+              appBarTitle: 'Home',
+            ),
+        '/recipepage': (context) => RecipePage(),
+        '/profile': (context) => ProfilePage(),
+        '/logout': (context) => LogInPage(),
+        '/calendar': (context) => const CalendarPage(),
+        '/schedule': (context) => const SchedulePage(),
+        '/analytics': (context) => const AnalyticsPage(),
+      },
+      home: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          return Scaffold(
+            appBar: CustomAppBar2(
+              appBarTitle: appBarTitle,
+              actions: [],
+            ),
+            body: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const TodayTextWidget(
+                    textStyle: AppTextStyles.todayTextStyle,
+                  ),
+                  const CurrentDayWidget(),
+                  CustomBox(),
+                  const SizedBox(height: 10),
+                  ConcreteLookingForSection(),
+                  const SizedBox(height: 10),
+                  DailyAdviceSection(),
+                  const SizedBox(height: 20),
+                  CustomBox2(),
+                ],
+              ),
+            ),
+            drawer: buildDrawer(context),
+          );
+        },
+      ),
+    );
+  }
+}

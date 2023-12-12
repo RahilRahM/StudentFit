@@ -1,2 +1,2 @@
-export 'welcome/index.dart';
+export 'welcomePages/index.dart';
 
