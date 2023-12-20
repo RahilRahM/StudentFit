@@ -1,157 +1,150 @@
-import 'authentification.dart';
-import '../../commons/colors.dart';
+import 'dart:convert';
+import 'otp_screen.dart';
 import 'package:flutter/material.dart';
-import '../welcomePages/widgets/widgets.dart';
+import 'package:http/http.dart' as http;
+import 'package:email_otp/email_otp.dart';
+import 'package:student_fit/commons/colors.dart';
+import 'package:student_fit/constants/endpoints.dart';
+import 'package:student_fit/screens/home/home_widgets/app_bar.dart';
 
 class ForgetPasswordPage extends StatefulWidget {
+  const ForgetPasswordPage({Key? key}) : super(key: key);
+
   @override
-  _ForgetPasswordPageState createState() => _ForgetPasswordPageState();
+  State<ForgetPasswordPage> createState() => _ForgetPasswordPage();
 }
 
-class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
-  bool isPhoneNumberValid = true;
+class _ForgetPasswordPage extends State<ForgetPasswordPage> {
+  TextEditingController email = TextEditingController();
+  EmailOTP myauth = EmailOTP();
 
-  Widget buildTextField(String hintText, IconData icon,
-      TextInputType keyboardType, ValueChanged<String>? onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 0, right: 100, top: 10, bottom: 10),
-      child: TextFormField(
-        decoration: InputDecoration(
-          prefixIcon: Icon(
-            icon,
-            color: AppColors.primaryColor,
-          ),
-          hintText: hintText,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.redColor),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.redColor),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.primaryColor),
-            borderRadius: BorderRadius.circular(15),
-          ),
-        ),
-        keyboardType: keyboardType,
-        onChanged: onChanged,
-        validator: (value) {
-          if (value != null && !isValidPhoneNumber(value)) {
-            return 'Invalid phone number';
-          }
-          return null;
-        },
-      ),
-    );
-  }
+  Future<bool> isEmailExists(String email) async {
+    final response = await http.get(Uri.parse('$apiEndpointIsEmailExists?email=$email'));
+    print('Response Status Code: ${response.statusCode}');
+    print('Response Body: ${response.body}');
 
-  bool isValidPhoneNumber(String phoneNumber) {
-    return phoneNumber.isEmpty ||
-        (phoneNumber.isNotEmpty && phoneNumber.contains(RegExp(r'^[0-9]+$')));
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return jsonData['status'] == 200;
+    } else {
+      return false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: AppColors.primaryColor,
-                    size: 30,
-                  ),
-                ),
-                const SizedBox(height: 26),
-                const Text(
-                  'Forgot Password?',
-                  style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 34,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.blackColor,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Don’t worry! It happens. Please enter the phone number, and we will send the OTP to this phone number.',
-                  style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w300,
-                    color: AppColors.blackColor,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Image.asset(
+      appBar: CustomAppBar2(
+        appBarTitle: 'Forget Password',
+        showFavoriteIcon: false,
+        onFavoritePressed: () {
+          // Handle favorite pressed
+        },
+        leadingIcon: Icons.arrow_back_ios,
+        onLeadingPressed: () {
+          Navigator.pop(context);
+        },
+        actions: [],
+      ),
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: MediaQuery.of(context).size.height * 0.02,
+            horizontal: MediaQuery.of(context).size.width * 0.05,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+              Padding(
+                padding: const EdgeInsets.all(1),
+                child: Image.asset(
                   'assets/images/forgetpwd.png',
-                  height: 300,
-                  width: 300,
+                  fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 20),
-                Form(
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+              Text(
+                'Don’t worry! It happens. Please enter your email, and we will send the OTP to this email address.',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: MediaQuery.of(context).size.width * 0.05,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.black,
+                ),
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: Card(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      buildTextField(
-                        'Enter the phone number',
-                        Icons.phone,
-                        TextInputType.phone,
-                        (value) {
-                          setState(() {
-                            isPhoneNumberValid = isValidPhoneNumber(value);
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      CustomElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation1, animation2) =>
-                                  AutoPage(),
-                              transitionsBuilder:
-                                  (context, animation, _, child) {
-                                const begin = Offset(1.0, 0.0);
-                                const end = Offset.zero;
-                                const curve = Curves.easeOut;
-                                var tween = Tween(begin: begin, end: end).chain(
-                                  CurveTween(curve: curve),
+                      TextFormField(
+                        controller: email,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(
+                            Icons.mail,
+                          ),
+                          suffixIcon: IconButton(
+                            onPressed: () async {
+                              bool emailExists = await isEmailExists(email.text);
+
+                              if (emailExists) {
+                                myauth.setConfig(
+                                  appEmail: "lilia.ammarkhodja@ensia.edu.dz",
+                                  appName: "Email OTP",
+                                  userEmail: email.text,
+                                  otpLength: 4,
+                                  otpType: OTPType.digitsOnly,
                                 );
-                                var offsetAnimation = animation.drive(tween);
-                                return SlideTransition(
-                                  position: offsetAnimation,
-                                  child: child,
+
+                                if (await myauth.sendOTP()) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("OTP has been sent"),
+                                    ),
+                                  );
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => OtpScreen(
+                                        myauth: myauth,
+                                        userEmail: email.text,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Oops, OTP send failed"),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Email does not exist"),
+                                  ),
                                 );
-                              },
-                              transitionDuration:
-                                  const Duration(milliseconds: 300),
+                              }
+                            },
+                            icon: Icon(
+                              Icons.send_rounded,
+                              color: AppColors.primaryColor,
                             ),
-                          );
-                        },
-                        buttonText: 'Continue',
-                        width: MediaQuery.of(context).size.width * 0.6,
-                        height: 55,
+                          ),
+                          hintText: "Email Address",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                )
-              ],
-            ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

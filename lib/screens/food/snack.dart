@@ -168,6 +168,7 @@ class _SnackPageState extends State<SnackPage> {
         },
         actions: [],
       ),
+      backgroundColor: Colors.white,
       drawer: buildDrawer(context),
       body: Padding(
         padding: const EdgeInsets.all(0.0),

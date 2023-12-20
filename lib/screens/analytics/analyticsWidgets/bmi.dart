@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:student_fit/commons/colors.dart';
 
+
 class BMICalculatorWidget extends StatefulWidget {
   const BMICalculatorWidget({Key? key}) : super(key: key);
 
@@ -445,3 +446,6 @@ class MeterDesign extends StatelessWidget {
     );
   }
 }
+
+
+ 

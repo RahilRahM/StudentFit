@@ -189,6 +189,7 @@ class _BreakfastPageState extends State<BreakfastPage> {
         },
         actions: [],
       ),
+      backgroundColor: Colors.white,
       drawer: buildDrawer(context),
       body: Padding(
         padding: const EdgeInsets.all(0.0),

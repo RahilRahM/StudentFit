@@ -1,7 +1,9 @@
 import 'calories_details.dart';
 import '../../commons/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../welcomePages/widgets/widgets.dart';
+import 'package:student_fit/constants/endpoints.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class WaterPage extends StatefulWidget {
@@ -14,6 +16,67 @@ class _WaterPageState extends State<WaterPage> {
   double goal = 2000;
   double previousTotal = 0;
   List<Map<String, dynamic>> waterIntakeHistory = [];
+  String userId =
+      'user123'; // Replace with your actual logic to get the user's ID after login
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch water intake history when the page is initialized
+    fetchWaterIntakeHistory();
+  }
+
+  Future<void> fetchWaterIntakeHistory() async {
+    try {
+      // Send a GET request to fetch water intake history for the user
+      var response = await http
+          .get(Uri.parse('$apiEndpointUserInsertWaterIntake?user_id=$userId'));
+
+      if (response.statusCode == 200) {
+        // Parse the response body and update the waterIntakeHistory list
+        List<dynamic> data = response.body as List<dynamic>;
+        setState(() {
+          waterIntakeHistory = List<Map<String, dynamic>>.from(data);
+        });
+      } else {
+        // Handle errors here
+        print(
+            'Failed to fetch water intake history. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching water intake history: $e');
+    }
+  }
+
+  Future<void> sendWaterIntakeToServer(
+      String userId, double waterIntake) async {
+    try {
+      // Assuming apiEndpointUserInsertWaterIntake is a String
+      String apiEndpointUserInsertWaterIntakeString =
+          'https://vercel-test-snowy-chi.vercel.app/users.insertWaterIntake';
+
+// Convert the String URL to a Uri object
+      Uri apiEndpointUserInsertWaterIntake =
+          Uri.parse(apiEndpointUserInsertWaterIntakeString);
+
+// Then, in your code, use it like this:
+      var response = await http.post(
+        apiEndpointUserInsertWaterIntake,
+        body: {
+          'user_id': userId,
+          'water_intake': waterIntake.toString(),
+        },
+      );
+
+      // Handle the response as needed
+      print('Server response: ${response.body}');
+
+      // Fetch updated water intake history after recording
+      await fetchWaterIntakeHistory();
+    } catch (e) {
+      print('Error recording water intake: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +135,7 @@ class _WaterPageState extends State<WaterPage> {
                   ),
                   const SizedBox(height: 25.0),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       setState(() {
                         waterIntake += 240;
                         if (waterIntake >= goal) {
@@ -93,49 +156,30 @@ class _WaterPageState extends State<WaterPage> {
                           'date': DateTime.now().toString(),
                           'intake': waterIntake,
                         });
+
+                        // Send water intake data to the server
+                        sendWaterIntakeToServer(userId, waterIntake);
                       });
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
-                      minimumSize: const Size(150, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      'Add Cup of Water',
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: const Text('Add Cup of Water'),
                   ),
-                  const SizedBox(height: 20.0),
-                  TextField(
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Set Custom Goal (ml)',
-                      contentPadding: EdgeInsets.only(
-                          left: 16.0), // Adjust the left margin as needed
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        goal = double.parse(value);
-                      });
+
+                  // Your existing code
+
+                  // Display fetched water intake history
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: waterIntakeHistory.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title:
+                            Text('Date: ${waterIntakeHistory[index]['date']}'),
+                        subtitle: Text(
+                            'Water Intake: ${waterIntakeHistory[index]['intake']} ml'),
+                      );
                     },
                   ),
                 ],
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: waterIntakeHistory.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text('Date: ${waterIntakeHistory[index]['date']}'),
-                    subtitle: Text(
-                        'Water Intake: ${waterIntakeHistory[index]['intake']} ml'),
-                  );
-                },
               ),
             ],
           ),

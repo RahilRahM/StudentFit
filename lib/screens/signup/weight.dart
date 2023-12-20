@@ -1,9 +1,44 @@
-import 'package:flutter/material.dart';
-import '../../commons/colors.dart';
 import 'style.dart';
-import 'height.dart';
+import '../../commons/colors.dart';
+import 'package:flutter/material.dart';
+import '../../utils/userAuthentication.dart';
+import 'package:student_fit/screens/home/homepage.dart';
 
-class WeightPage extends StatelessWidget {
+class WeightPage extends StatefulWidget {
+  final int userId;
+
+  WeightPage({required this.userId});
+
+  @override
+  _WeightPageState createState() => _WeightPageState();
+}
+
+class _WeightPageState extends State<WeightPage> {
+  int weight = 60;
+
+  void updateWeight(int newWeight) {
+    setState(() {
+      weight = newWeight;
+    });
+  }
+
+  void actionHandleWeightUpdate(BuildContext context) async {
+    String result = await UserAuthentication.insertWeight(widget.userId, weight);
+
+    if (result == 'success') {
+      print('Weight added successfully');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const HomePage(appBarTitle: 'Home'),
+        ),
+      );
+    } else {
+      // Handle error updating weight
+      print('Error updating weight: $result');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -19,7 +54,7 @@ class WeightPage extends StatelessWidget {
               width: screenWidth * 0.9,
               alignment: Alignment.center,
               height: screenHeight * 0.25,
-              child: Column(
+              child: const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
@@ -43,7 +78,7 @@ class WeightPage extends StatelessWidget {
             Container(
               height: screenHeight * 0.5,
               child: Center(
-                child: WeightPicker(),
+                child: WeightPicker(onWeightChanged: updateWeight,),
               ),
             ),
 
@@ -59,17 +94,14 @@ class WeightPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: Text('Back'),
+                    child: const Text('Back'),
                   ),
                   ElevatedButton(
                     style: button_next,
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => HeightPage()),
-                      );
+                      actionHandleWeightUpdate(context);
                     },
-                    child: Text('Continue'),
+                    child: const Text('Continue'),
                   ),
                 ],
               ),
@@ -82,6 +114,10 @@ class WeightPage extends StatelessWidget {
 }
 
 class WeightPicker extends StatefulWidget {
+  final Function(int) onWeightChanged;
+
+  WeightPicker({required this.onWeightChanged});
+
   @override
   _WeightPickerState createState() => _WeightPickerState();
 }
@@ -92,8 +128,8 @@ class _WeightPickerState extends State<WeightPicker> {
 
   // Controller for the PageView
   PageController pageController =
-      PageController(viewportFraction: 0.2, initialPage: 30);
-
+    PageController(viewportFraction: 0.2, initialPage: 30);
+  
   @override
   void initState() {
     super.initState();
@@ -102,6 +138,7 @@ class _WeightPickerState extends State<WeightPicker> {
       setState(() {
         selectedWeight = 30 + currentIndex;
       });
+      widget.onWeightChanged(selectedWeight);
     });
   }
 
@@ -127,7 +164,7 @@ class _WeightPickerState extends State<WeightPicker> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           Text(
@@ -135,7 +172,7 @@ class _WeightPickerState extends State<WeightPicker> {
             style: _getWeightTextStyle(weight),
           ),
           if (weight == selectedWeight)
-            Icon(
+            const Icon(
               Icons.arrow_drop_up,
               size: 55,
               color: AppColors.secondaryColor2,
@@ -147,28 +184,28 @@ class _WeightPickerState extends State<WeightPicker> {
 
   TextStyle _getWeightTextStyle(int weight) {
     if (weight == selectedWeight) {
-      return TextStyle(
+      return const TextStyle(
         fontFamily: 'Inter',
         fontSize: 36,
         fontWeight: FontWeight.w700,
         color: AppColors.secondaryColor2,
       );
     } else if (weight == selectedWeight + 1 || weight == selectedWeight - 1) {
-      return TextStyle(
+      return const TextStyle(
         fontFamily: 'Inter',
         fontSize: 27,
         fontWeight: FontWeight.w700,
         color: Color.fromRGBO(0, 0, 0, 0.51),
       );
     } else if (weight == selectedWeight + 2 || weight == selectedWeight - 2) {
-      return TextStyle(
+      return const TextStyle(
         fontFamily: 'Inter',
         fontSize: 23,
         fontWeight: FontWeight.w700,
         color: Color.fromRGBO(0, 0, 0, 0.3),
       );
     } else {
-      return TextStyle(
+      return const TextStyle(
         fontFamily: 'Inter',
         fontSize: 15,
         fontWeight: FontWeight.w700,

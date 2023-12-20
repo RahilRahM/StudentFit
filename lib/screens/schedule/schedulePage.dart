@@ -7,6 +7,12 @@ import 'schedule_widgets/addEventForm.dart';
 import 'package:student_fit/commons/colors.dart';
 import 'package:calendar_view/calendar_view.dart';
 
+
+
+
+
+
+
 // SchedulePage class that is a StatefulWidget
 class SchedulePage extends StatefulWidget {
   const SchedulePage({Key? key}) : super(key: key);
@@ -156,3 +162,4 @@ List<CalendarEventData<Event>> _events = [
     endTime: DateTime(_now.year, _now.month, _now.day, 22),
   ),
 ];
+

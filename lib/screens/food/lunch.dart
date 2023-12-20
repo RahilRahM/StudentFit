@@ -11,7 +11,6 @@ class LunchPage extends StatefulWidget {
 }
 
 class _LunchPageState extends State<LunchPage> {
-
   // List of image data (path and title)
   final List<Map<String, String>> imageData = [
     {'path': 'assets/images/lunch1.png', 'title': 'Bean salad'},
@@ -38,7 +37,7 @@ class _LunchPageState extends State<LunchPage> {
     {'path': 'assets/images/lunch8.png', 'title': 'Salad'},
   ];
 
-      // Shuffle the imageData list when the widget initializes
+  // Shuffle the imageData list when the widget initializes
   @override
   void initState() {
     super.initState();
@@ -177,6 +176,7 @@ class _LunchPageState extends State<LunchPage> {
         },
         actions: [],
       ),
+      backgroundColor: Colors.white,
       drawer: buildDrawer(context),
       body: Padding(
         padding: const EdgeInsets.all(0.0),

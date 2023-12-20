@@ -1,9 +1,43 @@
-import 'package:flutter/material.dart';
-import '../../commons/colors.dart';
 import 'style.dart';
-import 'weight.dart';
+import '../../commons/colors.dart';
+import 'package:flutter/material.dart';
+import '../../utils/userAuthentication.dart';
+import 'package:student_fit/screens/signup/height.dart';
 
-class AgePage extends StatelessWidget {
+class AgePage extends StatefulWidget {
+  final int userId;
+
+  AgePage({required this.userId});
+
+  @override
+  _AgePageState createState() => _AgePageState();
+}
+
+class _AgePageState extends State<AgePage> {
+  int age = 18;
+
+  void updateAge(int newAge) {
+    setState(() {
+      age = newAge;
+    });
+  }
+
+  void actionHandleAgeUpdate(BuildContext context) async {
+    String result = await UserAuthentication.insertAge(widget.userId, age);
+
+    if (result == 'success') {
+      print('Age added successfully');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => HeightPage(userId: widget.userId)),
+      );
+    } else {
+      // Handle error updating age
+      print('Error updating age: $result');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -43,7 +77,7 @@ class AgePage extends StatelessWidget {
             Container(
               height: screenHeight * 0.5,
               child: Center(
-                child: AgePicker(),
+                child: AgePicker(updateAge: updateAge),
               ),
             ),
 
@@ -64,10 +98,7 @@ class AgePage extends StatelessWidget {
                   ElevatedButton(
                     style: button_next,
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => WeightPage()),
-                      );
+                      actionHandleAgeUpdate(context);
                     },
                     child: Text('Continue'),
                   ),
@@ -82,6 +113,10 @@ class AgePage extends StatelessWidget {
 }
 
 class AgePicker extends StatefulWidget {
+  final Function updateAge;
+
+  AgePicker({required this.updateAge});
+
   @override
   _AgePickerState createState() => _AgePickerState();
 }
@@ -104,6 +139,7 @@ class _AgePickerState extends State<AgePicker> {
           setState(() {
             selectedAge = 13 + index;
           });
+          widget.updateAge(selectedAge);
         },
         itemExtent: 50,
         children: List.generate(53, (index) {
@@ -115,8 +151,6 @@ class _AgePickerState extends State<AgePicker> {
   }
 
   Widget _buildAgeItem(int age) {
-    // Build your age item widget here
-    // You can customize the appearance based on the selected age
     return Container(
       child: Center(
         child: Column(children: [
@@ -124,7 +158,9 @@ class _AgePickerState extends State<AgePicker> {
           Container(
             height: 2,
             width: 40,
-            color: (age == selectedAge) ? AppColors.secondaryColor2 : Colors.transparent,
+            color: (age == selectedAge)
+                ? AppColors.secondaryColor2
+                : Colors.transparent,
           ),
           // Text
           Center(
@@ -137,7 +173,9 @@ class _AgePickerState extends State<AgePicker> {
           Container(
             height: 2,
             width: 40,
-            color: (age == selectedAge) ? AppColors.secondaryColor2 : Colors.transparent,
+            color: (age == selectedAge)
+                ? AppColors.secondaryColor2
+                : Colors.transparent,
           ),
         ]),
       ),
@@ -145,8 +183,6 @@ class _AgePickerState extends State<AgePicker> {
   }
 
   TextStyle _getAgeTextStyle(int age) {
-    // Customize the text style based on the selected age
-    // This is just an example, you can adjust it as needed
     if (age == selectedAge) {
       return TextStyle(
         fontFamily: 'Inter',

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import '../../commons/colors.dart';
+import 'package:flutter/material.dart';
 
 // SignUp Pages Text Styles
 const TextStyle textBg = TextStyle(
@@ -18,7 +18,7 @@ const TextStyle textSm = TextStyle(
 
 // Button Styles
 final ButtonStyle button_back = ElevatedButton.styleFrom(
-  backgroundColor:  AppColors.grey1,
+  backgroundColor: AppColors.grey1,
   textStyle: TextStyle(fontSize: 25.0),
   fixedSize: Size(150, 50),
   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

@@ -43,14 +43,17 @@ class HomePage extends StatelessWidget {
         '/calendar': (context) => const CalendarPage(),
         '/schedule': (context) => const SchedulePage(),
         '/analytics': (context) => const AnalyticsPage(),
+   
       },
       home: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return Scaffold(
+            
             appBar: CustomAppBar2(
               appBarTitle: appBarTitle,
               actions: [],
             ),
+            backgroundColor: Colors.white,
             body: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

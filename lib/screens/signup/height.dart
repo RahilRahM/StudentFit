@@ -1,10 +1,43 @@
-import 'style.dart';
 import '../../commons/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:student_fit/screens/home/homepage.dart';
+import '../../utils/userAuthentication.dart';
+import 'package:student_fit/screens/signup/index.dart';
 
+class HeightPage extends StatefulWidget {
+  final int userId;
 
-class HeightPage extends StatelessWidget {
+  HeightPage({required this.userId});
+
+  @override
+  _HeightPageState createState() => _HeightPageState();
+}
+
+class _HeightPageState extends State<HeightPage> {
+  int height = 170;
+
+  void updateHeight(int newHeight) {
+    setState(() {
+      height = newHeight;
+    });
+  }
+
+  void actionHandleHeightUpdate(BuildContext context) async {
+    String result = await UserAuthentication.insertHeight(widget.userId, height);
+
+    if (result == 'success') {
+      print('Height added successfully');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WeightPage(userId: widget.userId),
+        ),
+      );
+    } else {
+      // Handle error updating height
+      print('Error updating height: $result');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -44,7 +77,9 @@ class HeightPage extends StatelessWidget {
             SizedBox(
               height: screenHeight * 0.5,
               child: Center(
-                child: HeightPicker(),
+                child: HeightPicker(
+                  onHeightChanged: updateHeight,
+                ),
               ),
             ),
 
@@ -65,12 +100,7 @@ class HeightPage extends StatelessWidget {
                   ElevatedButton(
                     style: button_next,
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomePage(appBarTitle: 'Home',),
-                        ),
-                      );
+                      actionHandleHeightUpdate(context);
                     },
                     child: Text('Continue'),
                   ),
@@ -85,17 +115,21 @@ class HeightPage extends StatelessWidget {
 }
 
 class HeightPicker extends StatefulWidget {
+  final Function(int) onHeightChanged;
+
+  HeightPicker({required this.onHeightChanged});
+
   @override
   _HeightPickerState createState() => _HeightPickerState();
 }
 
 class _HeightPickerState extends State<HeightPicker> {
   // Initial selected height
-  int selectedHeight = 150;
+  int selectedHeight = 170;
 
   // Controller for the ListWheelScrollView
   FixedExtentScrollController scrollController =
-      FixedExtentScrollController(initialItem: 50);
+    FixedExtentScrollController(initialItem: 50);
 
   @override
   Widget build(BuildContext context) {
@@ -104,13 +138,15 @@ class _HeightPickerState extends State<HeightPicker> {
       child: ListWheelScrollView(
         controller: scrollController,
         onSelectedItemChanged: (index) {
+          final newHeight = 120 + index;
+          widget.onHeightChanged(newHeight);
           setState(() {
-            selectedHeight = 100 + index;
+            selectedHeight = newHeight;
           });
         },
         itemExtent: 50,
         children: List.generate(130, (index) {
-          final height = 100 + index;
+          final height = 120 + index;
           return _buildHeightItem(height);
         }),
       ),

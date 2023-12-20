@@ -2,8 +2,13 @@ import 'age.dart';
 import 'style.dart';
 import '../../commons/colors.dart';
 import 'package:flutter/material.dart';
+import '../../utils/userAuthentication.dart';
 
 class GenderPage extends StatefulWidget {
+  final int userId;
+
+  GenderPage({required this.userId});
+
   @override
   _GenderPageState createState() => _GenderPageState();
 }
@@ -13,6 +18,33 @@ class _GenderPageState extends State<GenderPage> {
   bool isFemaleSelected = false;
 
   bool get isGenderSelected => isMaleSelected || isFemaleSelected;
+
+  void actionHandleGenderUpdate(BuildContext context) async {
+    if (mounted) {
+      setState(() {
+        // Show a loading indicator if needed
+      });
+    }
+
+    String result = await UserAuthentication.insertGender(widget.userId, isMaleSelected ? 'male' : 'female');
+
+    if (mounted) {
+      setState(() {
+        if (result == 'success') {
+          print('gender added succefssfully');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AgePage(userId: widget.userId),
+            ),
+          );
+        } else {
+          // Handle error updating gender
+          print('Error updating gender: $result');
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +91,7 @@ class _GenderPageState extends State<GenderPage> {
                     // Circle buttons
                     CircleButton(
                       icon: Icons.male,
-                      text: 'Male', // Add this line
+                      text: 'Male',
                       isSelected: isMaleSelected,
                       onPressed: () {
                         setState(() {
@@ -71,7 +103,7 @@ class _GenderPageState extends State<GenderPage> {
                     SizedBox(height: 15),
                     CircleButton(
                       icon: Icons.female,
-                      text: 'Female', // Add this line
+                      text: 'Female',
                       isSelected: isFemaleSelected,
                       onPressed: () {
                         setState(() {
@@ -105,15 +137,7 @@ class _GenderPageState extends State<GenderPage> {
                             backgroundColor:
                                 MaterialStateProperty.all<Color>(AppColors.grey1),
                           ),
-                    onPressed: isGenderSelected
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => AgePage()),
-                            );
-                          }
-                        : null, // Disable button if no gender is selected
+                    onPressed: isGenderSelected ? () => actionHandleGenderUpdate(context) : null,
                     child: Text('Continue'),
                   ),
                 ],
@@ -150,7 +174,7 @@ class CircleButton extends StatelessWidget {
           shape: BoxShape.circle,
           color: isSelected
               ? AppColors.secondaryColor2
-              : AppColors.grey1, // Use your original color values
+              : AppColors.grey1, 
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

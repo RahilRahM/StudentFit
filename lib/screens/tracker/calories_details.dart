@@ -53,6 +53,7 @@ class CaloriesDetailPage extends StatelessWidget {
         },
         actions: [],
       ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

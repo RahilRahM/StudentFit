@@ -3,17 +3,28 @@ import '../signup/SignUp.dart';
 import '../home/homepage.dart';
 import '../../commons/colors.dart';
 import 'package:flutter/material.dart';
+import '../../utils/userAuthentication.dart';
 import '../welcomePages/widgets/widgets.dart';
 import 'package:email_validator/email_validator.dart';
 
 class LogInPage extends StatefulWidget {
+  static const PageRoute = '/login';
+
+  const LogInPage({Key? key});
+
   @override
   _LogInPageState createState() => _LogInPageState();
 }
 
 class _LogInPageState extends State<LogInPage> {
+  final _tx_email_controller = TextEditingController();
+  final _tx_pass_controller = TextEditingController();
+
   bool isPasswordVisible = false;
-  bool isEmailValid = true;
+  bool show_progress_bar = false;
+  String emailErrorMessage = '';
+  String passwordErrorMessage = '';
+  String error_message = '';
 
   // Common styling for text fields
   Widget buildTextField(
@@ -24,53 +35,69 @@ class _LogInPageState extends State<LogInPage> {
     bool isPassword,
     VoidCallback onToggleVisibility,
     double width,
+    TextEditingController controller,
+    String errorMessage,
   ) {
     const double boxMargin = 15.0;
-    return Container(
-      width: width,
-      height: 65,
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.symmetric(vertical: boxMargin),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        color: Colors.white,
-        border: Border.all(
-          color: isPassword
-              ? AppColors.primaryColor
-              : isEmailValid
-                  ? AppColors.primaryColor
-                  : Colors.red,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 30,
-            color: AppColors.primaryColor,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TextField(
-              obscureText: isPassword && !isPasswordVisible,
-              decoration: InputDecoration(
-                hintText: hintText,
-                border: InputBorder.none,
-              ),
-              keyboardType: keyboardType,
-              onChanged: onChanged,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: width,
+          height: 65,
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.symmetric(vertical: boxMargin),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.white,
+            border: Border.all(
+              color:
+                  errorMessage.isNotEmpty ? Colors.red : AppColors.primaryColor,
             ),
           ),
-          if (isPassword)
-            IconButton(
-              icon: Icon(
-                isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 30,
                 color: AppColors.primaryColor,
               ),
-              onPressed: onToggleVisibility,
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  obscureText: isPassword && !isPasswordVisible,
+                  decoration: InputDecoration(
+                    hintText: hintText,
+                    border: InputBorder.none,
+                  ),
+                  keyboardType: keyboardType,
+                  onChanged: onChanged,
+                ),
+              ),
+              if (isPassword)
+                IconButton(
+                  icon: Icon(
+                    isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    color: AppColors.primaryColor,
+                  ),
+                  onPressed: onToggleVisibility,
+                ),
+            ],
+          ),
+        ),
+        if (errorMessage.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+            child: Text(
+              errorMessage,
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+              ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 
@@ -85,26 +112,7 @@ class _LogInPageState extends State<LogInPage> {
       body: SafeArea(
         child: Stack(
           children: [
-            /*Back Button
             Positioned(
-              top: 16,
-              left: 16,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(
-                      context); // Navigate back to the previous screen
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: AppColors.primaryColor,
-                    size: 30,
-                  ),
-                ),
-              ),
-            ),*/
-            const Positioned(
               top: 120,
               left: 8,
               child: SizedBox(
@@ -135,12 +143,14 @@ class _LogInPageState extends State<LogInPage> {
                 (value) {
                   bool isValid = EmailValidator.validate(value);
                   setState(() {
-                    isEmailValid = isValid;
+                    emailErrorMessage = isValid ? '' : 'Invalid email address';
                   });
                 },
                 false,
                 () {},
                 screenWidth * 0.9,
+                _tx_email_controller,
+                emailErrorMessage,
               ),
             ),
             Positioned(
@@ -152,6 +162,7 @@ class _LogInPageState extends State<LogInPage> {
                 TextInputType.visiblePassword,
                 (value) {
                   // Handle password input
+                  // Note: You can add password validation logic here if needed
                 },
                 true,
                 () {
@@ -160,6 +171,8 @@ class _LogInPageState extends State<LogInPage> {
                   });
                 },
                 screenWidth * 0.9,
+                _tx_pass_controller,
+                passwordErrorMessage,
               ),
             ),
             Positioned(
@@ -196,13 +209,7 @@ class _LogInPageState extends State<LogInPage> {
               child: CustomElevatedButton(
                 buttonText: 'Log In',
                 onPressed: () {
-                  // Navigate to HomePage
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(appBarTitle: 'Home'),
-                    ),
-                  );
+                  action_handle_login_button();
                 },
                 width: screenWidth * 0.9,
                 height: screenHeight * 0.08,
@@ -230,8 +237,7 @@ class _LogInPageState extends State<LogInPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              SignUpPage(), // Replace with your SignUpPage
+                          builder: (context) => SignUpPage(),
                         ),
                       );
                     },
@@ -255,5 +261,59 @@ class _LogInPageState extends State<LogInPage> {
         ),
       ),
     );
+  }
+
+  void action_handle_login_button() async {
+    setState(() {
+      show_progress_bar = true;
+      error_message = '';
+      passwordErrorMessage = '';
+      emailErrorMessage = '';
+    });
+
+    if (_tx_email_controller.text.isEmpty) {
+      setState(() {
+        emailErrorMessage = 'Email cannot be empty';
+      });
+    }
+    if (_tx_pass_controller.text.isEmpty) {
+      setState(() {
+        passwordErrorMessage = 'Password cannot be empty';
+      });
+    } else {
+      String result = await UserAuthentication.loginUser(
+        _tx_email_controller.text,
+        _tx_pass_controller.text,
+      );
+
+      setState(() {
+        show_progress_bar = false;
+        if (result == 'success') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomePage(appBarTitle: 'Home'),
+            ),
+          );
+        } else {
+          showErrorMessage(result);
+        }
+      });
+    }
+  }
+
+  void showErrorMessage(String message) {
+    if (message.toLowerCase().contains('password')) {
+      setState(() {
+        passwordErrorMessage = message;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }
