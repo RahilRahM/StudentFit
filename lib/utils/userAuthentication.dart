@@ -28,8 +28,9 @@ class UserAuthentication {
         password.isNotEmpty) {
       return User(
           uid: uid, name: 'Your name', email: email, password: password);
-    } else
+    } else {
       return null;
+    }
   }
 
   static Future<String> loginUser(String email, String password) async {
