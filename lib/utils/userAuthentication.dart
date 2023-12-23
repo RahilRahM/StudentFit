@@ -53,7 +53,7 @@ class UserAuthentication {
       }
       return 'success';
     }
-    error_msg = ret_data?['message'];
+    error_msg = ret_data['message'];
     return '$error_msg';
   }
 
