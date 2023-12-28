@@ -1,6 +1,7 @@
 import 'widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:student_fit/screens/login/login.dart';
+import 'package:student_fit/screens/signup/SignUp.dart';
+
 
 
 
@@ -32,7 +33,7 @@ class Pres3 extends StatelessWidget {
               onForward: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LogInPage()),
+                  MaterialPageRoute(builder: (context) => SignUpPage()),
                 );
               },
             ),
