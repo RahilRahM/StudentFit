@@ -8,7 +8,7 @@ class CustomElevatedButton2 extends StatelessWidget {
   final double width;
   final double height;
 
-  CustomElevatedButton2({
+  const CustomElevatedButton2({super.key, 
     required this.buttonText,
     required this.onPressed,
     this.width = 250, // default width

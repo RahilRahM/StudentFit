@@ -40,7 +40,7 @@ class _WaterPageState extends State<WaterPage> {
       } else {
         // Handle errors here
         print(
-            'Failed to fetch water intake history. Status code: ${response.statusCode}');
+          'Failed to fetch water intake history. Status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching water intake history: $e');
@@ -54,18 +54,18 @@ class _WaterPageState extends State<WaterPage> {
       String apiEndpointUserInsertWaterIntakeString =
           'https://vercel-test-snowy-chi.vercel.app/users.insertWaterIntake';
 
-// Convert the String URL to a Uri object
-      Uri apiEndpointUserInsertWaterIntake =
-          Uri.parse(apiEndpointUserInsertWaterIntakeString);
+      // Convert the String URL to a Uri object
+            Uri apiEndpointUserInsertWaterIntake =
+                Uri.parse(apiEndpointUserInsertWaterIntakeString);
 
-// Then, in your code, use it like this:
-      var response = await http.post(
-        apiEndpointUserInsertWaterIntake,
-        body: {
-          'user_id': userId,
-          'water_intake': waterIntake.toString(),
-        },
-      );
+      // Then, in your code, use it like this:
+            var response = await http.post(
+              apiEndpointUserInsertWaterIntake,
+              body: {
+                'user_id': userId,
+                'water_intake': waterIntake.toString(),
+              },
+            );
 
       // Handle the response as needed
       print('Server response: ${response.body}');
