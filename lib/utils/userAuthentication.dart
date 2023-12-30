@@ -12,31 +12,31 @@ class UserAuthentication {
     return digest.toString();
   }
 
-
   static Future<User?> getLoggedUser() async {
     String? uid = prefs?.getString("user_id");
+    String? name = prefs?.getString("user_name");
     String? email = prefs?.getString("user_email");
     String? password = prefs?.getString("user_password");
-    
-    
-    
+
     if (uid != null &&
         email != null &&
+        name != null &&
         password != null &&
         uid.isNotEmpty &&
         email.isNotEmpty &&
         password.isNotEmpty) {
-      return User(
-          uid: uid, name: 'Your name', email: email, password: password);
+      return User(uid: uid, name: name, email: email, password: password);
     } else {
       return null;
     }
   }
 
   static Future<String> loginUser(String email, String password) async {
-    //verify::
-     String hashedPassword = hashPassword(password, 'unique_salt_for_each_user');
-    Map<String, dynamic> form_data = {'email': email, 'password': hashedPassword};
+    String hashedPassword = hashPassword(password, 'unique_salt_for_each_user');
+    Map<String, dynamic> form_data = {
+      'email': email,
+      'password': hashedPassword
+    };
 
     var response = await dio.post(api_endpoint_user_login,
         data: FormData.fromMap(form_data));
@@ -46,8 +46,10 @@ class UserAuthentication {
     Map ret_data = jsonDecode(response.toString());
     if (ret_data['status'] == 200) {
       Map<String, dynamic> data = ret_data['data'];
+      print(ret_data);
       if (prefs != null) {
         prefs!.setString("user_id", "${data['id']}");
+        prefs!.setString("user_name", data['name']);
         prefs!.setString("user_email", data['email']);
         prefs!.setString("user_password", data['password']);
       }
@@ -80,7 +82,7 @@ class UserAuthentication {
 
     try {
       var response = await dio.post(api_endpoint_user_sign,
-        data: FormData.fromMap(form_data));
+          data: FormData.fromMap(form_data));
 
       print(response);
 
@@ -108,13 +110,48 @@ class UserAuthentication {
             }
           }
         } else {
-          return {'status': 'error', 'message': '${ret_data?['status']} - ${ret_data?['message']}'};
+          return {
+            'status': 'error',
+            'message': '${ret_data?['status']} - ${ret_data?['message']}'
+          };
         }
       } else {
-        return {'status': 'error', 'message': '${response.statusCode} - ${response.statusMessage}'};
+        return {
+          'status': 'error',
+          'message': '${response.statusCode} - ${response.statusMessage}'
+        };
       }
     } catch (error) {
       return {'status': 'error', 'message': '$error'};
+    }
+  }
+
+  static Future<String> getUserInfo(String userId) async {
+    try {
+      var response = await dio.get(
+        api_endpoint_user_get_info,
+        queryParameters: {'user_id': userId},
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> retData = jsonDecode(response.data);
+
+        if (retData['status'] == 200) {
+          // Save user info and weight records to preferences
+          if (prefs != null) {
+            prefs!.setString("user_info", jsonEncode(retData['user_info']));
+            prefs!.setString("weight_records", jsonEncode(retData['weight_records']));
+          }
+
+          return 'success';
+        } else {
+          return '${retData['status']} - ${retData['message']}';
+        }
+      } else {
+        return '${response.statusCode} - ${response.statusMessage}';
+      }
+    } catch (error) {
+      return '$error';
     }
   }
 
@@ -233,8 +270,6 @@ class UserAuthentication {
       return '$error';
     }
   }
-
-
 
   static bool isPasswordValid(String password) {
     return password.contains(RegExp(r'\d'));

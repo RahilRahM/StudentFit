@@ -2,6 +2,7 @@ const api_endpoint_user_sign = 'https://vercel-test-snowy-chi.vercel.app/users.s
 const api_endpoint_user_login = 'https://vercel-test-snowy-chi.vercel.app/users.login';
 const apiEndpointChangePassword = 'https://vercel-test-snowy-chi.vercel.app/users.changePassword';
 const apiEndpointIsEmailExists = 'https://vercel-test-snowy-chi.vercel.app/isEmailExists';
+const api_endpoint_user_get_info = 'https://vercel-test-snowy-chi.vercel.app/users.getUserInfo';
 const api_endpoint_user_insert_gender = 'https://vercel-test-snowy-chi.vercel.app/users.insertGender';
 const api_endpoint_user_insert_age = 'https://vercel-test-snowy-chi.vercel.app/users.insertAge';
 const api_endpoint_user_insert_height = 'https://vercel-test-snowy-chi.vercel.app/users.insertHeight';
