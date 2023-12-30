@@ -19,11 +19,11 @@ Future<bool> my_init_app() async {
       print('Failed to fetch user info: $result');
     }
   }
-  
+
   if (prefs != null) {
     Set<String> keys = prefs!.getKeys();
     for (String key in keys) {
-      print('key: $key, value: ${prefs!.get(key)}');
+      print(' $key : ${prefs!.get(key)}');
     }
   }
 
