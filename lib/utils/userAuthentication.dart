@@ -13,7 +13,7 @@ class UserAuthentication {
   }
 
   static Future<User?> getLoggedUser() async {
-    int? uid = prefs?.getInt("user_id");
+    String? uid = prefs?.getString("user_id");
     String? name = prefs?.getString("user_name");
     String? email = prefs?.getString("user_email");
     String? password = prefs?.getString("user_password");
@@ -22,6 +22,7 @@ class UserAuthentication {
         email != null &&
         name != null &&
         password != null &&
+        uid.isNotEmpty &&
         email.isNotEmpty &&
         password.isNotEmpty) {
       return User(uid: uid, name: name, email: email, password: password);
@@ -125,7 +126,7 @@ class UserAuthentication {
     }
   }
 
-  static Future<String> getUserInfo(int userId) async {
+  static Future<String> getUserInfo(String userId) async {
     try {
       var response = await dio.get(
         api_endpoint_user_get_info,
@@ -176,8 +177,14 @@ class UserAuthentication {
 
       if (response.statusCode == 200) {
         Map<String, dynamic> retData = jsonDecode(response.data);
-
         if (retData['status'] == 200) {
+          if (retData['data'] != null) {
+            List<Map<String, dynamic>> data = retData['data'];
+            print(data);
+            if (data.isNotEmpty) {
+              prefs!.setString("gender", data[0]['gender']);
+            }
+          }
           return 'success';
         } else {
           return '${retData['status']} - ${retData['message']}';
@@ -207,6 +214,14 @@ class UserAuthentication {
         Map<String, dynamic> retData = jsonDecode(response.data);
 
         if (retData['status'] == 200) {
+
+          if (retData['data'] != null) {
+            List<Map<String, dynamic>> data = retData['data'];
+            if (data.isNotEmpty) {
+              prefs!.setInt("age", data[0]['age']);
+            }
+          }
+
           return 'success';
         } else {
           return '${retData['status']} - ${retData['message']}';
@@ -236,6 +251,14 @@ class UserAuthentication {
         Map<String, dynamic> retData = jsonDecode(response.data);
 
         if (retData['status'] == 200) {
+
+          if (retData['data'] != null) {
+            List<Map<String, dynamic>> data = retData['data'];
+            if (data.isNotEmpty) {
+              prefs!.setInt("height", data[0]['height']);
+            }
+          }
+
           return 'success';
         } else {
           return '${retData['status']} - ${retData['message']}';
@@ -265,6 +288,13 @@ class UserAuthentication {
         Map<String, dynamic> retData = jsonDecode(response.data);
 
         if (retData['status'] == 200) {
+          if (retData['data'] != null) {
+            List<Map<String, dynamic>> data = retData['data'];
+            if (data.isNotEmpty) {
+              prefs!.setInt("weight", data[0]['weight']);
+            }
+          }
+
           return 'success';
         } else {
           return '${retData['status']} - ${retData['message']}';

@@ -12,7 +12,7 @@ User? user;
 Future<bool> my_init_app() async {
   prefs = await SharedPreferences.getInstance();
   user = await UserAuthentication.getLoggedUser();
-  
+
   if (user != null) {
     String result = await UserAuthentication.getUserInfo(user!.uid);
     if (result != 'success') {
