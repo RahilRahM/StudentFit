@@ -25,7 +25,8 @@ class _LogInPageState extends State<LogInPage> {
   String emailErrorMessage = '';
   String passwordErrorMessage = '';
   String error_message = '';
-
+  
+  
   // Common styling for text fields
   Widget buildTextField(
     String hintText,

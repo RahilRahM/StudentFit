@@ -1,9 +1,8 @@
-import 'calories_details.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import '../welcomePages/widgets/widgets.dart';
-import 'package:student_fit/constants/endpoints.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:student_fit/commons/index.dart';
+import 'package:percent_indicator/percent_indicator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:student_fit/screens/home/home_widgets/app_bar.dart';
 
 class WaterPage extends StatefulWidget {
   @override
@@ -11,175 +10,182 @@ class WaterPage extends StatefulWidget {
 }
 
 class _WaterPageState extends State<WaterPage> {
-  double waterIntake = 0;
-  double goal = 2000;
-  double previousTotal = 0;
-  List<Map<String, dynamic>> waterIntakeHistory = [];
-  String userId =
-      'user123'; // Replace with your actual logic to get the user's ID after login
+  final double goal = 3000.0; // Daily water intake goal in ml
+  double waterIntake = 0.0;
+  List<String> intakeHistory = [];
+  double defaultCupSize = 250.0; // Default cup size
+  bool goalAchievedMessageShown = false;
 
   @override
   void initState() {
     super.initState();
-    // Fetch water intake history when the page is initialized
-    fetchWaterIntakeHistory();
+    _loadPreferences();
   }
 
-  Future<void> fetchWaterIntakeHistory() async {
-    try {
-      // Send a GET request to fetch water intake history for the user
-      var response = await http
-          .get(Uri.parse('$apiEndpointUserInsertWaterIntake?user_id=$userId'));
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      waterIntake = prefs.getDouble('waterIntake') ?? 0.0;
+      intakeHistory = prefs.getStringList('intakeHistory') ?? [];
+      defaultCupSize = prefs.getDouble('cupSize') ?? defaultCupSize;
+    });
+    if (prefs.getString('date') != DateTime.now().toIso8601String().substring(0, 10)) {
+      goalAchievedMessageShown = false;
+    }
+  }
 
-      if (response.statusCode == 200) {
-        // Parse the response body and update the waterIntakeHistory list
-        List<dynamic> data = response.body as List<dynamic>;
+  Future<void> _updateWaterIntake(double intake) async {
+    final prefs = await SharedPreferences.getInstance();
+    DateTime now = DateTime.now();
+    String timestamp = "${now.toIso8601String().substring(0, 10)} ${now.hour}:${now.minute}";
+  
+    setState(() {
+      waterIntake += intake;
+      intakeHistory.add("$timestamp: $intake ml");
+    });
+  
+    await prefs.setDouble('waterIntake', waterIntake);
+    await prefs.setStringList('intakeHistory', intakeHistory);
+  
+    _checkAndShowGoalAchievement(); // Moved inside setState to ensure waterIntake is updated
+  }
+  
+  void _checkAndShowGoalAchievement() {
+    if (waterIntake >= goal && !goalAchievedMessageShown) {
+      goalAchievedMessageShown = true;  
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text(
+              'Great Job!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+                fontSize: 24,
+              ),
+            ),
+            content: Text(
+              'You have reached your daily water intake goal of $goal ml!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.blueAccent,
+                fontSize: 18,
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Continue', style: TextStyle(color: Colors.indigo)),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+  
+  Widget _buildWaterIntakeIndicator() {
+    return CircularPercentIndicator(
+      radius: 120.0,
+      lineWidth: 13.0,
+      animation: true,
+      percent: waterIntake / goal > 1.0 ? 1.0 : waterIntake / goal,
+      center: Text(
+        "${waterIntake.toStringAsFixed(0)} ml",
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+      ),
+      circularStrokeCap: CircularStrokeCap.round,
+      progressColor: AppColors.primaryColor,
+    );
+  }
+
+  Widget _buildCupSizeDropdown() {
+    return DropdownButton<double>(
+      value: defaultCupSize,
+      onChanged: (newValue) {
         setState(() {
-          waterIntakeHistory = List<Map<String, dynamic>>.from(data);
+          defaultCupSize = newValue ?? defaultCupSize;
         });
-      } else {
-        // Handle errors here
-        print(
-          'Failed to fetch water intake history. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching water intake history: $e');
-    }
+        _saveCupSize(defaultCupSize);
+      },
+      items: <double>[250.0, 500.0, 750.0]
+          .map<DropdownMenuItem<double>>((double value) {
+        return DropdownMenuItem<double>(
+          value: value,
+          child: Text("${value.toInt()}ml Cup"),
+        );
+      }).toList(),
+    );
   }
 
-  Future<void> sendWaterIntakeToServer(
-      String userId, double waterIntake) async {
-    try {
-      // Assuming apiEndpointUserInsertWaterIntake is a String
-      String apiEndpointUserInsertWaterIntakeString =
-          'https://vercel-test-snowy-chi.vercel.app/users.insertWaterIntake';
+  Future<void> _saveCupSize(double cupSize) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('cupSize', cupSize);
+  }
 
-      // Convert the String URL to a Uri object
-            Uri apiEndpointUserInsertWaterIntake =
-                Uri.parse(apiEndpointUserInsertWaterIntakeString);
+  Widget _buildAddWaterButton() {
+    return ElevatedButton.icon(
+      onPressed: () => _updateWaterIntake(defaultCupSize),
+      icon: Icon(Icons.local_drink, color: Colors.white),
+      label: Text('Add ${defaultCupSize.toInt()}ml',
+          style: TextStyle(color: Colors.white)),
+      style: ElevatedButton.styleFrom(
+        primary: AppColors.primaryColor,
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      ),
+    );
+  }
 
-      // Then, in your code, use it like this:
-            var response = await http.post(
-              apiEndpointUserInsertWaterIntake,
-              body: {
-                'user_id': userId,
-                'water_intake': waterIntake.toString(),
-              },
-            );
-
-      // Handle the response as needed
-      print('Server response: ${response.body}');
-
-      // Fetch updated water intake history after recording
-      await fetchWaterIntakeHistory();
-    } catch (e) {
-      print('Error recording water intake: $e');
-    }
+  Widget _buildIntakeHistory() {
+    return ExpansionTile(
+      title: Text('Intake History'),
+      children: [
+        Container(
+          height: 350, // Adjust this height as necessary
+          child: SingleChildScrollView(
+            child: Column(
+              children: intakeHistory
+                  .map((record) => ListTile(title: Text(record)))
+                  .toList(),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
+      appBar: CustomAppBar2(
+        appBarTitle: 'Water intake',
+        showFavoriteIcon: false,
+        leadingIcon: Icons.arrow_back_ios,
+        onLeadingPressed: () {
+          Navigator.pop(context);
+        },
+        actions: [],
+        
+      ),
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
           child: Column(
-            children: [
-              CustomAppBar(
-                title: 'Water Details',
-                onBack: () {
-                  Navigator.pop(context);
-                },
-                onForward: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CaloriesDetailPage(
-                        recipeData: {
-                          'path': 'assets/images/snack1.jpeg',
-                          'title': 'Healthy Salad',
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 40),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Daily Goal: ${goal.toStringAsFixed(2)} ml',
-                    style: const TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  CircularPercentIndicator(
-                    radius: 180.0,
-                    lineWidth: 15.0,
-                    percent:
-                        waterIntake / goal > 1.0 ? 1.0 : waterIntake / goal,
-                    center: Text(
-                      '${(waterIntake + previousTotal).toStringAsFixed(2)} ml',
-                      style: const TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    progressColor:
-                        waterIntake >= goal ? Colors.green : Colors.blue,
-                    backgroundColor:
-                        waterIntake >= goal ? Colors.blue : Colors.grey,
-                  ),
-                  const SizedBox(height: 25.0),
-                  ElevatedButton(
-                    onPressed: () async {
-                      setState(() {
-                        waterIntake += 240;
-                        if (waterIntake >= goal) {
-                          previousTotal += waterIntake;
-                          waterIntake = 0;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text(
-                                  'Congratulations! You reached your daily water intake goal. Stay hydrated!'),
-                              action: SnackBarAction(
-                                label: 'OK',
-                                onPressed: () {},
-                              ),
-                            ),
-                          );
-                        }
-                        waterIntakeHistory.add({
-                          'date': DateTime.now().toString(),
-                          'intake': waterIntake,
-                        });
-
-                        // Send water intake data to the server
-                        sendWaterIntakeToServer(userId, waterIntake);
-                      });
-                    },
-                    child: const Text('Add Cup of Water'),
-                  ),
-
-                  // Your existing code
-
-                  // Display fetched water intake history
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: waterIntakeHistory.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title:
-                            Text('Date: ${waterIntakeHistory[index]['date']}'),
-                        subtitle: Text(
-                            'Water Intake: ${waterIntakeHistory[index]['intake']} ml'),
-                      );
-                    },
-                  ),
-                ],
-              ),
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              _buildWaterIntakeIndicator(),
+              SizedBox(height: 20),
+              _buildCupSizeDropdown(),
+              SizedBox(height: 20),
+              _buildAddWaterButton(),
+              SizedBox(height: 20),
+              _buildIntakeHistory(),
             ],
           ),
         ),
@@ -187,3 +193,4 @@ class _WaterPageState extends State<WaterPage> {
     );
   }
 }
+

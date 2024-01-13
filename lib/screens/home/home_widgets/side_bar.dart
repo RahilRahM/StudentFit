@@ -2,6 +2,8 @@ import '../../../commons/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:student_fit/commons/index.dart';
 import 'package:student_fit/screens/login/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 Drawer buildDrawer(BuildContext context) {
   return Drawer(
@@ -151,7 +153,8 @@ void _showLogoutConfirmationDialog(BuildContext context) {
           ),
           TextButton(
             child: const Text('Logout'),
-            onPressed: () {
+            onPressed: () async {
+              await _clearSharedPreferences();
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
@@ -159,9 +162,14 @@ void _showLogoutConfirmationDialog(BuildContext context) {
                 ),
               );
             },
-          ),
+          ),          
         ],
       );
     },
   );
+}
+
+Future<void> _clearSharedPreferences() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.clear(); // This clears all data stored in SharedPreferences
 }
