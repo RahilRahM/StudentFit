@@ -111,10 +111,13 @@ class UserAuthentication {
             if (userData != null) {
               // Save user data to preferences
               if (prefs != null) {
-                prefs!.setString("user_id", "${userData['id']}");
-                prefs!.setString("user_email", userData['email']);
-                prefs!.setString("user_password", userData['password']);
-                prefs!.setString("user_name", userData['name']);
+                Map<String, dynamic> user = {
+                  'user_id': userData['id'],
+                  'user_name': userData['name'],
+                  'user_email': userData['email'],
+                  'user_password': userData['password'],
+                };
+                prefs!.setString('user', jsonEncode(user));
               }
 
               return {'status': 'success', 'userId': userData['id']};
@@ -162,7 +165,6 @@ class UserAuthentication {
                 'height': userInfo['height'],
                 'weight': weight,
                 'gender': userInfo['gender'],
-                'user_id': userInfo['user_id'],
                 'age': userInfo['age'],
               };
               // Save the map to preferences
@@ -201,7 +203,12 @@ class UserAuthentication {
             List<Map<String, dynamic>> data = retData['data'];
             print(data);
             if (data.isNotEmpty) {
-              prefs!.setString("gender", data[0]['gender']);
+              String? userInfoString = prefs?.getString('user_info');
+              if (userInfoString != null) {
+                Map<String, dynamic> userInfo = jsonDecode(userInfoString);
+                userInfo['gender'] = data[0]['gender'];
+                prefs!.setString('user_info', jsonEncode(userInfo));
+              }
             }
           }
           return 'success';
@@ -236,7 +243,12 @@ class UserAuthentication {
           if (retData['data'] != null) {
             List<Map<String, dynamic>> data = retData['data'];
             if (data.isNotEmpty) {
-              prefs!.setInt("age", data[0]['age']);
+              String? userInfoString = prefs?.getString('user_info');
+              if (userInfoString != null) {
+                Map<String, dynamic> userInfo = jsonDecode(userInfoString);
+                userInfo['age'] = data[0]['age'];
+                prefs!.setString('user_info', jsonEncode(userInfo));
+              }
             }
           }
 
@@ -272,7 +284,12 @@ class UserAuthentication {
           if (retData['data'] != null) {
             List<Map<String, dynamic>> data = retData['data'];
             if (data.isNotEmpty) {
-              prefs!.setInt("height", data[0]['height']);
+              String? userInfoString = prefs?.getString('user_info');
+              if (userInfoString != null) {
+                Map<String, dynamic> userInfo = jsonDecode(userInfoString);
+                userInfo['height'] = data[0]['height'];
+                prefs!.setString('user_info', jsonEncode(userInfo));
+              }
             }
           }
 
@@ -308,7 +325,12 @@ class UserAuthentication {
           if (retData['data'] != null) {
             List<Map<String, dynamic>> data = retData['data'];
             if (data.isNotEmpty) {
-              prefs!.setInt("weight", data[0]['weight']);
+              String? userInfoString = prefs?.getString('user_info');
+              if (userInfoString != null) {
+                Map<String, dynamic> userInfo = jsonDecode(userInfoString);
+                userInfo['weight'] = data[0]['weight'];
+                prefs!.setString('user_info', jsonEncode(userInfo));
+              }
             }
           }
 
