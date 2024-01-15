@@ -263,7 +263,7 @@ class _EventsPageState extends State<EventsPage> {
                     // Loop to create events for each week
                     while (recurringStartDate.isBefore(DateTime.now().add(Duration(days: 365)))) {
                       var recurringEvent = CalendarEventData<Event>(
-                        color: Colors.orange, // Set color to orange for recurring events
+                        color:AppColors.secondaryColor,
                         title: event.title,
                         event: Event(title: event.title),
                         description: event.description,
