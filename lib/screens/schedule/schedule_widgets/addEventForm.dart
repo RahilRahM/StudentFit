@@ -1,13 +1,20 @@
+import 'dart:convert';
+import './event.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:student_fit/commons/colors.dart';
 import 'package:calendar_view/calendar_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:student_fit/screens/schedule/schedulePage.dart';
 
 
+enum Recurrence {oneDay, everyWeek}
 
 
 class EventsPage extends StatefulWidget {
-  const EventsPage({Key? key}) : super(key: key);
+  final EventController<Event> eventController;
+
+  const EventsPage({Key? key, required this.eventController}) : super(key: key);
 
   @override
   State<EventsPage> createState() => _EventsPageState();
@@ -17,19 +24,73 @@ class _EventsPageState extends State<EventsPage> {
   final _formKey = GlobalKey<FormState>(); // Form key added here
 
   EventController controller = EventController();
-  TextEditingController eventController = TextEditingController();
   TextEditingController titleController = TextEditingController();
   TextEditingController startDateController = TextEditingController();
   TextEditingController endDateController = TextEditingController();
   TextEditingController startTimeController = TextEditingController();
   TextEditingController endTimeController = TextEditingController();
   TextEditingController descController = TextEditingController();
+  
 
   TimeOfDay startTime = TimeOfDay.now();
   TimeOfDay endTime = TimeOfDay.now();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
+  Recurrence _recurrence = Recurrence.oneDay;
 
+  Future<void> _saveEvent(CalendarEventData<Event> event) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
+    savedEvents.add(jsonEncode(eventToJson(event, _recurrence)));
+    await prefs.setStringList('savedEvents', savedEvents);
+  }
+
+
+  Widget _buildRecurrenceOption() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Radio(
+          value: Recurrence.oneDay,
+          groupValue: _recurrence,
+          onChanged: (Recurrence? value) {
+            setState(() {
+              _recurrence = value!;
+            });
+          },
+          fillColor: MaterialStateProperty.resolveWith<Color>((states) {
+            if (states.contains(MaterialState.selected)) {
+              return AppColors.primaryColor; // Color when selected
+            }
+            return Colors.grey; // Color when not selected
+          }),
+        ),
+        Container(
+          padding: EdgeInsets.zero, // Zero padding around the text
+          child: const Text('One Day'),
+        ),
+        const SizedBox(width: 90), // Space between options
+        Radio(
+          value: Recurrence.everyWeek,
+          groupValue: _recurrence,
+          onChanged: (Recurrence? value) {
+            setState(() {
+              _recurrence = value!;
+            });
+          },
+          fillColor: MaterialStateProperty.resolveWith<Color>((states) {
+            if (states.contains(MaterialState.selected)) {
+              return AppColors.primaryColor; // Color when selected
+            }
+            return Colors.grey; // Color when not selected
+          }),
+        ),
+        const Text('Every Week'),
+      ],
+    );
+  }
+  
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,12 +119,6 @@ class _EventsPageState extends State<EventsPage> {
                     ),
                   ),
                 ),
-                Textinput(
-                  controller: eventController,
-                  validator: validateEvent,
-                  label: 'Event',
-                ),
-                const SizedBox(height: 10),
                 Textinput(
                   controller: titleController,
                   validator: validateTitle,
@@ -126,6 +181,8 @@ class _EventsPageState extends State<EventsPage> {
                   ],
                 ),
                 const SizedBox(height: 10),
+                _buildRecurrenceOption(),
+                const SizedBox(height: 10),
                 Textinput(
                   controller: descController,
                   label: 'Description',
@@ -166,39 +223,71 @@ class _EventsPageState extends State<EventsPage> {
                 ),
               ),
             ),
-
-            // Done Button
             ElevatedButton(
-              onPressed: () {
-                // Validate returns true if the form is valid, or false otherwise.
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                    // If the form is valid, save the form data.
                   _formKey.currentState!.save();
-
-                  final event = CalendarEventData(
-                    color: AppColors.secondaryColor2,
-                    title: titleController.text,
-                    event: eventController.text,
-                    description: descController.text,
-                    date: startDate,
-                    endDate: endDate,
-                    startTime: DateTime(
-                      startDate.year,
-                      startDate.month,
-                      startDate.day,
-                      startTime.hour,
-                      startTime.minute,
-                    ),
-                    endTime: DateTime(
-                      endDate.year,
-                      endDate.month,
-                      endDate.day,
-                      endTime.hour,
-                      endTime.minute,
-                    ),
-                    
+            
+                  DateTime startDateTime = DateTime(
+                    startDate.year,
+                    startDate.month,
+                    startDate.day,
+                    startTime.hour,
+                    startTime.minute,
                   );
-                  CalendarControllerProvider.of(context).controller.add(event);
+            
+                  DateTime endDateTime = DateTime(
+                    endDate.year,
+                    endDate.month,
+                    endDate.day,
+                    endTime.hour,
+                    endTime.minute,
+                  );
+            
+                  // Define the initial event
+                  final event = CalendarEventData<Event>(
+                    color: _recurrence == Recurrence.oneDay ? AppColors.primaryColor: AppColors.secondaryColor, 
+                    title: titleController.text,
+                    event: Event(title: titleController.text),
+                    description: descController.text,
+                    date: startDateTime,
+                    endDate: endDateTime,
+                    startTime: startDateTime,
+                    endTime: endDateTime,
+                  );
+            
+                  if (_recurrence == Recurrence.everyWeek) {
+                    DateTime recurringStartDate = startDateTime;
+                    DateTime recurringEndDate = endDateTime;
+            
+                    // Loop to create events for each week
+                    while (recurringStartDate.isBefore(DateTime.now().add(Duration(days: 365)))) {
+                      var recurringEvent = CalendarEventData<Event>(
+                        color: Colors.orange, // Set color to orange for recurring events
+                        title: event.title,
+                        event: Event(title: event.title),
+                        description: event.description,
+                        date: recurringStartDate,
+                        endDate: recurringEndDate,
+                        startTime: recurringStartDate,
+                        endTime: recurringEndDate,
+                      );
+            
+                      widget.eventController.add(recurringEvent);
+                      await _saveEvent(recurringEvent);
+            
+                      // Advance the dates by one week
+                      recurringStartDate = recurringStartDate.add(Duration(days: 7));
+                      recurringEndDate = recurringEndDate.add(Duration(days: 7));
+                    }
+                    
+                  } 
+                  
+                  else {
+                    widget.eventController.add(event); // Add a single event
+                    await _saveEvent(event);
+                  }
+            
                   Navigator.of(context).pop();
                 }
               },
@@ -450,4 +539,3 @@ class Textinput extends StatelessWidget {
     );
   }
 }
-

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'schedule_widgets/event.dart';
 import 'package:flutter/material.dart';
@@ -6,16 +7,33 @@ import '../home/home_widgets/side_bar.dart';
 import 'schedule_widgets/addEventForm.dart';
 import 'package:student_fit/commons/colors.dart';
 import 'package:calendar_view/calendar_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+class EventWrapper {
+  final CalendarEventData<Event> event;
+  final Recurrence recurrence;
 
+  EventWrapper(this.event, this.recurrence);
 
+  Map<String, dynamic> toJson() => {
+        'event': eventToJson(event, recurrence), // Use the updated eventToJson
+        'recurrence':
+            recurrence == Recurrence.everyWeek ? 'everyWeek' : 'oneDay',
+      };
 
-
-
+  static EventWrapper fromJson(Map<String, dynamic> json) {
+    return EventWrapper(
+      jsonToEvent(json['event']),
+      json['recurrence'] == 'everyWeek'
+          ? Recurrence.everyWeek
+          : Recurrence.oneDay,
+    );
+  }
+}
 
 // SchedulePage class that is a StatefulWidget
 class SchedulePage extends StatefulWidget {
-  const SchedulePage({Key? key}) : super(key: key);
+  const SchedulePage ({Key? key}) : super(key: key);
 
   @override
   State<SchedulePage> createState() => ScheduleState();
@@ -23,11 +41,32 @@ class SchedulePage extends StatefulWidget {
 
 // ScheduleState class that holds the state for SchedulePage
 class ScheduleState extends State<SchedulePage> {
+  final EventController<Event> eventController = EventController<Event>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEvents();
+  }
+
+  Future<void> _loadEvents() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
+      for (String jsonString in savedEvents) {
+        final event = jsonToEvent(jsonDecode(jsonString));
+        eventController.add(event);
+      }
+    } catch (e) {
+      print("Error loading events: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return CalendarControllerProvider(
       // Use EventController as the calendar controller
-      controller: EventController(),
+      controller: eventController,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
@@ -40,7 +79,7 @@ class ScheduleState extends State<SchedulePage> {
             },
             actions: [],
           ),
-          body: const Schedule(),
+          body: Schedule(eventController: eventController),
           drawer: buildDrawer(context),
         ),
       ),
@@ -50,7 +89,9 @@ class ScheduleState extends State<SchedulePage> {
 
 // Schedule class that is a StatefulWidget
 class Schedule extends StatefulWidget {
-  const Schedule({Key? key}) : super(key: key);
+  final EventController<Event> eventController;
+
+  const Schedule({Key? key, required this.eventController}) : super(key: key);
 
   @override
   State<Schedule> createState() => _ScheduleState();
@@ -59,6 +100,37 @@ class Schedule extends StatefulWidget {
 // _ScheduleState class that holds the state for Schedule
 class _ScheduleState extends State<Schedule>
     with SingleTickerProviderStateMixin {
+  Future<void> _saveEvent(
+      CalendarEventData<Event> event, Recurrence recurrence) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
+    savedEvents.add(jsonEncode(eventToJson(event, recurrence)));
+    await prefs.setStringList('savedEvents', savedEvents);
+  }
+
+  Future<void> _loadEvents() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
+      for (String jsonString in savedEvents) {
+        final jsonData = jsonDecode(jsonString);
+        if (jsonData != null && jsonData is Map<String, dynamic>) {
+          final event = jsonToEvent(jsonData);
+        } else {
+          print('Invalid or null JSON data encountered');
+        }
+      }
+    } catch (e) {
+      print("Error loading events: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEvents();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,6 +141,8 @@ class _ScheduleState extends State<Schedule>
         children: [
           // WeekView widget for displaying the calendar week
           WeekView(
+            controller:
+                CalendarControllerProvider.of<Event>(context).controller,
             showLiveTimeLineInAllDays: true,
             startDay: WeekDays.sunday,
             // Header styling
@@ -135,11 +209,13 @@ class _ScheduleState extends State<Schedule>
                   ),
                   context: context,
                   builder: (BuildContext context) {
-                    return EventsPage();
+                    return EventsPage(
+                        eventController:
+                            widget.eventController); // Pass the controller
                   },
                 );
               },
-              child: const Icon(Icons.add),
+             child: const Icon(Icons.add),
             ),
           ),
         ],
@@ -163,3 +239,52 @@ List<CalendarEventData<Event>> _events = [
   ),
 ];
 
+Map<String, dynamic> eventToJson(
+    CalendarEventData<Event> event, Recurrence recurrenceType) {
+  return {
+    'title': event.title,
+    'description': event.description,
+    'date': event.date.toIso8601String(),
+    'endDate': event.endDate.toIso8601String(),
+    'startTime': event.startTime?.toIso8601String(),
+    'endTime': event.endTime?.toIso8601String(),
+    'recurrence':
+        recurrenceType == Recurrence.everyWeek ? 'everyWeek' : 'oneDay',
+  };
+}
+
+CalendarEventData<Event> jsonToEvent(Map<String, dynamic> jsonData) {
+  var recurrenceType = jsonData['recurrence'] == 'everyWeek'
+      ? Recurrence.everyWeek
+      : Recurrence.oneDay;
+
+  return CalendarEventData<Event>(
+    title: jsonData['title'],
+    description: jsonData['description'],
+    date: DateTime.parse(jsonData['date']),
+    endDate: DateTime.parse(jsonData['endDate']),
+    startTime: jsonData['startTime'] != null
+        ? DateTime.parse(jsonData['startTime'])
+        : null,
+    endTime: jsonData['endTime'] != null
+        ? DateTime.parse(jsonData['endTime'])
+        : null,
+    color: recurrenceType == Recurrence.everyWeek
+        ? AppColors.secondaryColor
+        : AppColors.primaryColor,
+  );
+}
+
+CalendarEventData<Event> copyEventWithNewDate(
+    CalendarEventData<Event> event, DateTime newDate) {
+  return CalendarEventData<Event>(
+    color: event.color,
+    title: event.title,
+    event: event.event,
+    description: event.description,
+    date: newDate,
+    endDate: newDate.add(Duration(hours: 1)),
+    startTime: newDate,
+    endTime: newDate.add(Duration(hours: 1)),
+  );
+}
