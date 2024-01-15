@@ -5,9 +5,6 @@ import 'analyticsWidgets/bodyComposition.dart';
 import 'package:student_fit/screens/home/home_widgets/app_bar.dart';
 import 'package:student_fit/screens/home/home_widgets/side_bar.dart';
 
-
-
-
 class AnalyticsPage extends StatelessWidget {
   const AnalyticsPage({Key? key}) : super(key: key);
 

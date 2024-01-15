@@ -13,19 +13,26 @@ class UserAuthentication {
   }
 
   static Future<User?> getLoggedUser() async {
-    String? uid = prefs?.getString("user_id");
-    String? name = prefs?.getString("user_name");
-    String? email = prefs?.getString("user_email");
-    String? password = prefs?.getString("user_password");
+    String? userInfoString = prefs?.getString('user');
 
-    if (uid != null &&
-        email != null &&
-        name != null &&
-        password != null &&
-        uid.isNotEmpty &&
-        email.isNotEmpty &&
-        password.isNotEmpty) {
-      return User(uid: uid, name: name, email: email, password: password);
+    if (userInfoString != null) {
+      Map<String, dynamic> userInfo = jsonDecode(userInfoString);
+
+      int? uid = userInfo['user_id'];
+      String? name = userInfo['user_name'];
+      String? email = userInfo['user_email'];
+      String? password = userInfo['user_password'];
+
+      if (uid != null &&
+          email != null &&
+          name != null &&
+          password != null &&
+          email.isNotEmpty &&
+          password.isNotEmpty) {
+        return User(uid: uid, name: name, email: email, password: password);
+      } else {
+        return null;
+      }
     } else {
       return null;
     }
@@ -48,10 +55,15 @@ class UserAuthentication {
       Map<String, dynamic> data = ret_data['data'];
       print(ret_data);
       if (prefs != null) {
-        prefs!.setString("user_id", "${data['id']}");
-        prefs!.setString("user_name", data['name']);
-        prefs!.setString("user_email", data['email']);
-        prefs!.setString("user_password", data['password']);
+        // Create a map to store user info
+        Map<String, dynamic> user = {
+          'user_id': data['id'],
+          'user_name':  data['name'],
+          'user_email': data['email'],
+          'user_password': data['password'],
+        };
+        // Save the map to preferences
+        prefs!.setString('user', jsonEncode(user));
       }
       return 'success';
     }
@@ -61,6 +73,7 @@ class UserAuthentication {
 
   static Future<bool> logoutUser(User user) async {
     await Future.delayed(Duration(seconds: 5));
+    await prefs!.setBool('isLoggedIn', false);
     return true;
   }
 
@@ -126,7 +139,7 @@ class UserAuthentication {
     }
   }
 
-  static Future<String> getUserInfo(String userId) async {
+  static Future<String> getUserInfo(int userId) async {
     try {
       var response = await dio.get(
         api_endpoint_user_get_info,
@@ -141,14 +154,20 @@ class UserAuthentication {
             Map<String, dynamic> userInfo = retData['user_info'][0];
             var weightRecords = retData['weight'];
 
-              if (weightRecords.isNotEmpty) {
-                int weight = weightRecords[0]['weight'];
-                
-                prefs!.setString("gender", userInfo['gender']);
-                prefs!.setInt("age", userInfo['age']);
-                prefs!.setInt("height", userInfo['height']);
-                prefs!.setInt("weight", weight);
-              }
+            if (weightRecords.isNotEmpty) {
+              int weight = weightRecords[0]['weight'];
+
+              // Create a map to store user info
+              Map<String, dynamic> user_info = {
+                'height': userInfo['height'],
+                'weight': weight,
+                'gender': userInfo['gender'],
+                'user_id': userInfo['user_id'],
+                'age': userInfo['age'],
+              };
+              // Save the map to preferences
+              prefs!.setString('user_info', jsonEncode(user_info));
+            }
           }
           return 'success';
         } else {
@@ -214,7 +233,6 @@ class UserAuthentication {
         Map<String, dynamic> retData = jsonDecode(response.data);
 
         if (retData['status'] == 200) {
-
           if (retData['data'] != null) {
             List<Map<String, dynamic>> data = retData['data'];
             if (data.isNotEmpty) {
@@ -251,7 +269,6 @@ class UserAuthentication {
         Map<String, dynamic> retData = jsonDecode(response.data);
 
         if (retData['status'] == 200) {
-
           if (retData['data'] != null) {
             List<Map<String, dynamic>> data = retData['data'];
             if (data.isNotEmpty) {

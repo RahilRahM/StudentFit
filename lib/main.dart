@@ -1,9 +1,11 @@
+
 import 'models/user.dart';
 import 'package:dio/dio.dart';
 import 'utils/userAuthentication.dart';
 import 'package:flutter/material.dart';
 import 'screens/welcomePages/welcome.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:student_fit/screens/home/homepage.dart';
 
 final dio = Dio();
 SharedPreferences? prefs;
@@ -17,6 +19,8 @@ Future<bool> my_init_app() async {
     String result = await UserAuthentication.getUserInfo(user!.uid);
     if (result != 'success') {
       print('Failed to fetch user info: $result');
+    } else {
+      await prefs!.setBool('isLoggedIn', true); 
     }
   }
 
@@ -33,7 +37,9 @@ Future<bool> my_init_app() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await my_init_app();
-  runApp(MyApp());
+  runApp(MaterialApp(
+    home: prefs!.getBool('isLoggedIn') == true ? HomePage(appBarTitle: 'Home',) : MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
