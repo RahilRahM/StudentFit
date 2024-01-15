@@ -224,21 +224,6 @@ class _ScheduleState extends State<Schedule>
   }
 }
 
-// Function to get the current DateTime
-DateTime get _now => DateTime.now();
-
-// List of CalendarEventData containing sample event data
-List<CalendarEventData<Event>> _events = [
-  CalendarEventData(
-    date: _now,
-    event: Event(title: "Joe's Birthday"),
-    title: "Project meeting",
-    description: "Today is a project meeting.",
-    startTime: DateTime(_now.year, _now.month, _now.day, 18, 30),
-    endTime: DateTime(_now.year, _now.month, _now.day, 22),
-  ),
-];
-
 Map<String, dynamic> eventToJson(
     CalendarEventData<Event> event, Recurrence recurrenceType) {
   return {
