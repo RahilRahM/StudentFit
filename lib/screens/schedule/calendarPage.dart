@@ -73,6 +73,7 @@ class _CalendarPageState extends State<CalendarPage> {
         child: Column(
           children: [
             Row(
+              
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 DateView(),
