@@ -33,7 +33,7 @@ class EventWrapper {
 
 // SchedulePage class that is a StatefulWidget
 class SchedulePage extends StatefulWidget {
-  const SchedulePage ({Key? key}) : super(key: key);
+  const SchedulePage({Key? key}) : super(key: key);
 
   @override
   State<SchedulePage> createState() => ScheduleState();
@@ -125,6 +125,37 @@ class _ScheduleState extends State<Schedule>
     }
   }
 
+  void _onEventTap(CalendarEventData<Event> event) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(event.title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Description: ${event.description}'),
+                Text(
+                    'Start Time: ${event.startTime != null ? DateFormat('yyyy-MM-dd – kk:mm').format(event.startTime!) : 'Not specified'}'),
+                Text(
+                    'End Time: ${event.endTime != null ? DateFormat('yyyy-MM-dd – kk:mm').format(event.endTime!) : 'Not specified'}'),
+                // You can add more details here
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -139,13 +170,10 @@ class _ScheduleState extends State<Schedule>
       body: Stack(
         alignment: Alignment.topCenter,
         children: [
-          // WeekView widget for displaying the calendar week
           WeekView(
-            controller:
-                CalendarControllerProvider.of<Event>(context).controller,
+            controller: CalendarControllerProvider.of<Event>(context).controller,
             showLiveTimeLineInAllDays: true,
             startDay: WeekDays.sunday,
-            // Header styling
             headerStyle: const HeaderStyle(
               decoration: BoxDecoration(
                 color: AppColors.primaryColor,
@@ -160,16 +188,14 @@ class _ScheduleState extends State<Schedule>
               ),
               rightIcon: Icon(
                 Icons.arrow_forward_ios,
-                color: Colors.white,
+                color: AppColors.whiteColor,
               ),
             ),
-            // Function to build the timeline string
             timeLineStringBuilder: (DateTime currentTime,
                 {DateTime? secondaryDate}) {
               String formattedTime = DateFormat('HH:mm').format(currentTime);
               return formattedTime;
             },
-            // Function to build the day tiles in the week
             weekDayBuilder: (dayIndex) {
               DateTime currentDate = DateTime.now();
               bool isToday = dayIndex.day == currentDate.day &&
@@ -192,15 +218,37 @@ class _ScheduleState extends State<Schedule>
                 weekDayStringBuilder: (dayIndex) => ' $day\n$daynumber',
               );
             },
+            eventTileBuilder: (context, events, bounds, start, end) {
+              if (events.isNotEmpty) {
+                CalendarEventData<Event> event = events.first;
+            
+                return GestureDetector(
+                  onTap: () => _onEventTap(event),
+                  child: Container(
+                    width: bounds.width,
+                    height: bounds.height,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: event.color ?? Colors.blue,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      event.title,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                );
+              }
+              return Container();  // Return an empty container for empty 'events' list
+            },
+                                       
           ),
-          // Floating action button to add events
           Positioned(
             bottom: 16.0,
             right: 16.0,
             child: FloatingActionButton(
               backgroundColor: AppColors.primaryColor,
               onPressed: () {
-                // Show a modal bottom sheet with the EventsPage widget
                 showModalBottomSheet(
                   isScrollControlled: true,
                   shape: const RoundedRectangleBorder(
