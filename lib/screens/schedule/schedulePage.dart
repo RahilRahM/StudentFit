@@ -240,8 +240,7 @@ class _ScheduleState extends State<Schedule>
                 );
               }
               return Container();  // Return an empty container for empty 'events' list
-            },
-                                       
+            },                                    
           ),
           Positioned(
             bottom: 16.0,

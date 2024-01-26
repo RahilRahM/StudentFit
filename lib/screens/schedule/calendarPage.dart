@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import '../../../commons/colors.dart';
 import 'package:flutter/material.dart';
+import './schedule_widgets/event.dart';
 import 'schedule_widgets/calendar.dart';
 import '../home/home_widgets/app_bar.dart';
 import '../home/home_widgets/side_bar.dart';
@@ -15,15 +16,56 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
+  List<CalendarEventData<Event>> events = [];
   CalendarFormat calendarFormat = CalendarFormat.month;
   final EventController calendarController = EventController();
 
   @override
+  void initState() {
+    super.initState();
+    _loadEvents();
+  }
+
+  void _loadEvents() {
+    // Populate your events list here
+    // This is an example, replace it with your actual event loading logic
+    events = [
+      CalendarEventData(
+        title: "Test Event",
+        startTime: DateTime.now(),
+        endTime: DateTime.now().add(Duration(hours: 2)),
+        date: DateTime.now(),
+      ),
+      // Add more events as needed
+    ];
+  }
+
+  List<Widget> _buildEventWidgets() {
+    return events.map((event) {
+      final startTime = event.startTime != null
+          ? DateFormat('h:mm a').format(event.startTime!)
+          : 'Unknown Time';
+      final endTime = event.endTime != null
+          ? DateFormat('h:mm a').format(event.endTime!)
+          : 'Unknown Time';
+      final date = event.date != null
+          ? DateFormat('MMM d, yyyy').format(event.date)
+          : 'Unknown Date';
+      return EventWidget(
+        title: event.title,
+        time: "$startTime - $endTime",
+        date: date,
+      );
+    }).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    List<Widget> eventWidgets = _buildEventWidgets();
     return Scaffold(
       appBar: const CustomAppBar2(appBarTitle: "Calendar", actions: []),
+      backgroundColor: Colors.white,
       drawer: buildDrawer(context),
-      //floatingActionButton: ActionButton(),
       body: Padding(
         padding: EdgeInsets.all(
           MediaQuery.of(context).size.width * 0.05,
@@ -49,12 +91,11 @@ class _CalendarPageState extends State<CalendarPage> {
               child: Calendar(calendarFormat: calendarFormat),
             ),
             const SizedBox(height: 10),
-            // Display widgets
             Expanded(
               child: ListView.builder(
-                itemCount: _widgets.length,
+                itemCount: eventWidgets.length,
                 itemBuilder: (context, index) {
-                  return _widgets[index];
+                  return eventWidgets[index];
                 },
               ),
             ),
@@ -63,15 +104,6 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
     );
   }
-
-  // List of widgets
-  List<Widget> _widgets = [
-    EventWidget(
-        title: "School", time: "10:00 AM - 12:00 PM", date: "Jan 4, 2023"),
-    EventWidget(
-        title: "Meeting", time: "2:00 PM - 4:00 PM", date: "Jan 4, 2023"),
-    // Add more widgets as needed
-  ];
 }
 
 class EventWidget extends StatelessWidget {
@@ -235,10 +267,11 @@ class DateView extends StatelessWidget {
     return DateFormat('MMM y').format(DateTime.now());
   }
 
-  TextStyle _textStyle(
-      {double fontSize = 16.0,
-      FontWeight fontWeight = FontWeight.normal,
-      Color? color}) {
+  TextStyle _textStyle({
+    double fontSize = 16.0,
+    FontWeight fontWeight = FontWeight.normal,
+    Color? color,
+  }) {
     return TextStyle(
       fontFamily: 'Poppins',
       fontSize: fontSize,
@@ -260,8 +293,6 @@ class ButtonView extends StatefulWidget {
 class _ButtonViewState extends State<ButtonView> {
   CalendarFormat calendarFormat = CalendarFormat.month;
 
-  _ButtonViewState();
-
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
@@ -277,7 +308,6 @@ class _ButtonViewState extends State<ButtonView> {
           fontSize: 22.0,
           fontFamily: 'Poppins',
           fontWeight: FontWeight.w600,
-          height: 0,
         ),
         textAlign: TextAlign.center,
       ),
