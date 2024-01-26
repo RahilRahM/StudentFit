@@ -206,6 +206,7 @@ class _ScheduleState extends State<Schedule>
               Color otherDayColor = Colors.transparent;
               String dayAndDate = DateFormat('E dd').format(dayIndex);
               String day = dayAndDate.substring(0, 1);
+              
               String daynumber = dayAndDate.substring(3);
               return WeekDayTile(
                 dayIndex: dayOfWeek,

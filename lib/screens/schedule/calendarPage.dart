@@ -64,6 +64,7 @@ class _CalendarPageState extends State<CalendarPage> {
     List<Widget> eventWidgets = _buildEventWidgets();
     return Scaffold(
       appBar: const CustomAppBar2(appBarTitle: "Calendar", actions: []),
+      
       backgroundColor: Colors.white,
       drawer: buildDrawer(context),
       body: Padding(
