@@ -125,36 +125,96 @@ class _ScheduleState extends State<Schedule>
     }
   }
 
+
   void _onEventTap(CalendarEventData<Event> event) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(event.title),
-          content: SingleChildScrollView(
-            child: ListBody(
+        return FractionallySizedBox(
+          heightFactor: 0.6, // Adjust the height factor as needed
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text('Description: ${event.description}'),
                 Text(
-                    'Start Time: ${event.startTime != null ? DateFormat('yyyy-MM-dd – kk:mm').format(event.startTime!) : 'Not specified'}'),
+                  event.title,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today, color: Colors.grey),
+                    SizedBox(width: 10),
+                    Text(
+                      DateFormat('EEEE, MMMM d').format(event.date),
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    Icon(Icons.access_time, color: Colors.grey),
+                    SizedBox(width: 10),
+                    Text(
+                      '${DateFormat('HH:mm').format(event.startTime!)} – ${DateFormat('HH:mm').format(event.endTime!)}',
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
                 Text(
-                    'End Time: ${event.endTime != null ? DateFormat('yyyy-MM-dd – kk:mm').format(event.endTime!) : 'Not specified'}'),
-                // You can add more details here
+                  event.description,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                ),
+                Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () {
+                        // TODO: Implement edit functionality
+                      },
+                      icon: Icon(Icons.edit, color: Theme.of(context).primaryColor),
+                      label: Text('Edit', style: TextStyle(color: Theme.of(context).primaryColor)),
+                    ),
+                    TextButton.icon(
+                      onPressed: () {
+                        // TODO: Implement delete functionality
+                      },
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      label: Text('Delete', style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
         );
       },
     );
   }
+
+
+
+
+
+// The EventEditingPage should be a new screen where users can edit event details
+// After editing, the page should return the edited event
+
 
   @override
   void initState() {
