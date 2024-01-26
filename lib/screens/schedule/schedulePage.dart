@@ -125,7 +125,6 @@ class _ScheduleState extends State<Schedule>
     }
   }
 
-
   void _onEventTap(CalendarEventData<Event> event) {
     showModalBottomSheet(
       context: context,
@@ -135,7 +134,7 @@ class _ScheduleState extends State<Schedule>
       ),
       builder: (BuildContext context) {
         return FractionallySizedBox(
-          heightFactor: 0.6, // Adjust the height factor as needed
+          heightFactor: 0.35, // Reduced height factor as needed
           child: Container(
             padding: EdgeInsets.all(16.0),
             decoration: BoxDecoration(
@@ -145,59 +144,66 @@ class _ScheduleState extends State<Schedule>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  event.title,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                  ),
-                ),
-                SizedBox(height: 10),
+                // Event title with the leading colored icon
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, color: Colors.grey),
-                    SizedBox(width: 10),
-                    Text(
-                      DateFormat('EEEE, MMMM d').format(event.date),
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    CircleAvatar(
+                      radius: 5.0,
+                      backgroundColor: event.color ?? Colors.blue,
+                    ),
+                    SizedBox(width: 18),
+                    Expanded(
+                      child: Text(
+                        event.title,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 25,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
-                SizedBox(height: 10),
+                
+                SizedBox(height: 50),
+                
+                // Date and time row
                 Row(
                   children: [
-                    Icon(Icons.access_time, color: Colors.grey),
+                    Icon(Icons.access_time, color:AppColors.primaryColor),
                     SizedBox(width: 10),
                     Text(
                       '${DateFormat('HH:mm').format(event.startTime!)} – ${DateFormat('HH:mm').format(event.endTime!)}',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                      style: TextStyle(fontSize: 18, color: const Color.fromARGB(255, 128, 126, 126)),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-                Text(
-                  event.description,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                Divider(color: Colors.grey[300], thickness: 1, height: 20),
+                SizedBox(height: 30),
+                Row(
+                  children: [
+                    Icon(Icons.description, color: AppColors.primaryColor),
+                    SizedBox(width: 10),
+                    Text(
+                      event.description ?? 'No description provided',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    ),
+                  ],
                 ),
-                Spacer(),
+
+            
+                Divider(color: Colors.grey[300], thickness: 1, height: 20),
+                SizedBox(height: 40),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    TextButton.icon(
-                      onPressed: () {
-                        // TODO: Implement edit functionality
-                      },
-                      icon: Icon(Icons.edit, color: Theme.of(context).primaryColor),
-                      label: Text('Edit', style: TextStyle(color: Theme.of(context).primaryColor)),
-                    ),
-                    TextButton.icon(
-                      onPressed: () {
-                        // TODO: Implement delete functionality
-                      },
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      label: Text('Delete', style: TextStyle(color: Colors.red)),
-                    ),
+                    _buildActionButton(Icons.edit, 'Edit', AppColors.primaryColor, () {
+                      // TODO: Implement edit functionality
+                    }),
+                    _buildActionButton(Icons.delete, 'Delete', Colors.red, () {
+                      // TODO: Implement delete functionality
+                    }),
                   ],
                 ),
               ],
@@ -207,14 +213,33 @@ class _ScheduleState extends State<Schedule>
       },
     );
   }
+  
+  // Helper method to build the action buttons
+  Widget _buildActionButton(IconData icon, String text, Color color, VoidCallback onPressed) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, color: color),
+      label: Text(text, style: TextStyle(color: color)),
+    );
+  }
+  
+  
+  
+  Widget _buildDetailRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.grey),
+        SizedBox(width: 10),
+        Text(text, style: TextStyle(fontSize: 18, color: Colors.grey)),
+      ],
+    );
+  }
+  
 
+  
+  
 
-
-
-
-// The EventEditingPage should be a new screen where users can edit event details
-// After editing, the page should return the edited event
-
+  
 
   @override
   void initState() {
