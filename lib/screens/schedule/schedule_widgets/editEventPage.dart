@@ -1,12 +1,14 @@
 import 'dart:convert';
 import './event.dart';
+import './addEventForm.dart';
 import 'package:intl/intl.dart';
+import '../../../commons/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:StudentFit/commons/colors.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:StudentFit/screens/schedule/schedulePage.dart';
-import 'package:StudentFit/screens/schedule/schedule_widgets/addEventForm.dart';
+
+
 
 class EditEventPage extends StatefulWidget {
   final EventController<Event> eventController;
