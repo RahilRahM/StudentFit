@@ -6,12 +6,14 @@ class CustomSubBox extends StatefulWidget {
   final String time;
   final bool isSelected;
   final Function() onTap;
+  final IconData icon;
 
   CustomSubBox({
     required this.text,
     required this.time,
     required this.isSelected,
     required this.onTap,
+    required this.icon,
   });
 
   @override
@@ -23,52 +25,35 @@ class _CustomSubBoxState extends State<CustomSubBox> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
         margin: const EdgeInsets.symmetric(vertical: 9.0),
-        width: 0.9 * MediaQuery.of(context).size.width,
+        padding: const EdgeInsets.all(12.0),
         decoration: BoxDecoration(
-          color: widget.isSelected
-              ? AppColors.primaryColor
-              : const Color.fromARGB(255, 229, 229, 229),
+          color: widget.isSelected ? AppColors.primaryColor : Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.primaryColor),
         ),
         child: Row(
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 0.14 * MediaQuery.of(context).size.width,
-                vertical: 0.02 * MediaQuery.of(context).size.width,
-              ),
-              width: 0.5 * MediaQuery.of(context).size.width,
-              height: 0.1 * MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-              ),
+            Icon(widget.icon, color: widget.isSelected ? Colors.white : AppColors.primaryColor),
+            SizedBox(width: 10),
+            Expanded(
               child: Text(
                 widget.text,
                 style: TextStyle(
-                  color:
-                      widget.isSelected ? Colors.white : AppColors.blackColor,
-                  fontSize: 19.0,
+                  color: widget.isSelected ? Colors.white : Colors.black,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            const SizedBox(width: 20),
-            Container(
-              width: 0.3 * MediaQuery.of(context).size.width,
-              height: 0.1 * MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(
-                child: Text(
-                  widget.time,
-                  style: TextStyle(
-                    color:
-                        widget.isSelected ? Colors.white : AppColors.blackColor,
-                    fontSize: 16.0,
-                  ),
-                ),
+            Text(
+              widget.time,
+              style: TextStyle(
+                color: widget.isSelected ? Colors.white : Colors.black,
+                fontSize: 16.0,
               ),
             ),
           ],
@@ -85,78 +70,41 @@ class CustomBox2 extends StatefulWidget {
 
 class _CustomBox2State extends State<CustomBox2> {
   int selectedBoxIndex = -1;
+  final List<Map<String, dynamic>> activities = [
+    {'text': 'Breakfast', 'time': '07:40 - 08:00', 'icon': Icons.free_breakfast},
+    {'text': 'School', 'time': '08:30 - 13:20', 'icon': Icons.school},
+    {'text': 'Lunch', 'time': '13:30 - 14:10', 'icon': Icons.lunch_dining},
+    {'text': 'Snack', 'time': '15:00 - 15:30', 'icon': Icons.fastfood},
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      shrinkWrap: true,
-      children: [
-        Container(
-          margin: EdgeInsets.only(left: 20, bottom: 10),
-          child: Text(
-            'What is for today ?',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 0.04 * MediaQuery.of(context).size.width,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w600,
-              height: 0.09,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0), // Apply horizontal padding
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+            child: Text(
+              'What is for today?',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-        Container(
-          width: 0.8 * MediaQuery.of(context).size.width,
-          height: 0.6 * MediaQuery.of(context).size.width,
-          margin: EdgeInsets.only(
-            top: 0.04 * MediaQuery.of(context).size.width,
-            left: 0.01 * MediaQuery.of(context).size.width,
-            right: 0.01 * MediaQuery.of(context).size.width,
-          ),
-          decoration: BoxDecoration(
-            border: Border.all(
-              width: 0.001 * MediaQuery.of(context).size.width,
-              color: AppColors.primaryColor,
+          for (int i = 0; i < activities.length; i++)
+            CustomSubBox(
+              text: activities[i]['text'],
+              time: activities[i]['time'],
+              isSelected: selectedBoxIndex == i,
+              onTap: () => onBoxTap(i),
+              icon: activities[i]['icon'],
             ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              CustomSubBox(
-                text: 'Breakfast',
-                time: '07:40 - 08:00',
-                isSelected: selectedBoxIndex == 0,
-                onTap: () {
-                  onBoxTap(0);
-                },
-              ),
-              CustomSubBox(
-                text: 'School',
-                time: '08:30 - 13:20',
-                isSelected: selectedBoxIndex == 1,
-                onTap: () {
-                  onBoxTap(1);
-                },
-              ),
-              CustomSubBox(
-                text: 'Lunch',
-                time: '13:40 - 14:40',
-                isSelected: selectedBoxIndex == 2,
-                onTap: () {
-                  onBoxTap(2);
-                },
-              ),
-              CustomSubBox(
-                text: 'Workout',
-                time: '15:30 - 16:00',
-                isSelected: selectedBoxIndex == 3,
-                onTap: () {
-                  onBoxTap(3);
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

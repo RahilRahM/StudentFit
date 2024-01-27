@@ -1,51 +1,72 @@
+import 'dart:convert';
 import './event.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:student_fit/commons/colors.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:student_fit/screens/schedule/schedulePage.dart';
 import 'package:student_fit/screens/schedule/schedule_widgets/addEventForm.dart';
-
-
-
-
-
 
 class EditEventPage extends StatefulWidget {
   final EventController<Event> eventController;
+  final CalendarEventData<Event> event;
 
-  const EditEventPage({Key? key, required this.eventController}) : super(key: key);
+  const EditEventPage({Key? key, required this.eventController, required this.event})
+      : super(key: key);
 
   @override
   State<EditEventPage> createState() => _EditEventPage();
 }
 
 class _EditEventPage extends State<EditEventPage> {
-  final _formKey = GlobalKey<FormState>(); // Form key added here
+  final _formKey = GlobalKey<FormState>();
 
-  EventController controller = EventController();
   TextEditingController titleController = TextEditingController();
   TextEditingController startDateController = TextEditingController();
   TextEditingController endDateController = TextEditingController();
   TextEditingController startTimeController = TextEditingController();
   TextEditingController endTimeController = TextEditingController();
   TextEditingController descController = TextEditingController();
-  
 
-  TimeOfDay startTime = TimeOfDay.now();
-  TimeOfDay endTime = TimeOfDay.now();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
+  TimeOfDay startTime = TimeOfDay.now();
+  TimeOfDay endTime = TimeOfDay.now();
 
+  @override
+  void initState() {
+    super.initState();
+    // Populate the fields with the event data
+    titleController.text = widget.event.title;
+    descController.text = widget.event.description;
+    startDateController.text = DateFormat.yMd().format(widget.event.date);
+    endDateController.text = DateFormat.yMd().format(widget.event.endDate);
 
-  Future<void> _saveEvent(CalendarEventData<Event> event) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
-    await prefs.setStringList('savedEvents', savedEvents);
   }
 
-  
-  
+  Future<void> _updateEvent(
+    CalendarEventData<Event> newEvent,
+    Recurrence recurrence,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
+
+    // Assuming you have a unique way to identify events, such as by title
+    int eventIndex = savedEvents.indexWhere((jsonString) {
+      final existingEvent = jsonToEvent(jsonDecode(jsonString));
+      return existingEvent.title == widget.event.title; // Use a unique identifier here
+    });
+
+    if (eventIndex != -1) {
+      savedEvents[eventIndex] = jsonEncode(
+        eventToJson(newEvent, recurrence),
+      );
+      await prefs.setStringList('savedEvents', savedEvents);
+      // Update the UI and event controller as necessary
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -147,41 +168,16 @@ class _EditEventPage extends State<EditEventPage> {
           ),
         ),
       ),
+
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 40.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // Cancel Button
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: AppColors.primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(32),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 19,
-                ),
-              ),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(
-                  color: AppColors.primaryColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
             ElevatedButton(
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
                   _formKey.currentState!.save();
-            
                   DateTime startDateTime = DateTime(
                     startDate.year,
                     startDate.month,
@@ -197,8 +193,20 @@ class _EditEventPage extends State<EditEventPage> {
                     endTime.hour,
                     endTime.minute,
                   );
+                  CalendarEventData<Event> updatedEvent = CalendarEventData<Event>(
+                    title: titleController.text,
+                    event: Event(title: titleController.text, id: ''),
+                    description: descController.text,
+                    date: startDate,
+                    endDate: endDate,
+                    startTime: startDateTime,
+                    endTime: endDateTime,
+                  );
 
-            
+                  // Call the update method, assuming the recurrence is 'oneDay'
+                  await _updateEvent(updatedEvent, Recurrence.oneDay);
+
+                  // Pop the current screen
                   Navigator.of(context).pop();
                 }
               },
@@ -300,91 +308,6 @@ class _EditEventPage extends State<EditEventPage> {
     if (value == null || value.isEmpty) {
       return 'Title cannot be empty';
     }
-    return null;
-  }
-
-  String? validateEvent(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Event cannot be empty';
-    }
-    return null;
-  }
-
-  String? validateStartDate(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Start date cannot be empty';
-    }
-
-    DateTime? date;
-    try {
-      date = DateFormat.yMd().parse(value);
-    } catch (e) {
-      date = null;
-    }
-
-    if (date == null) {
-      return 'Invalid start date';
-    }
-
-    return null;
-  }
-
-  String? validateEndDate(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'End date cannot be empty';
-    }
-
-    DateTime? date;
-    try {
-      date = DateFormat.yMd().parse(value);
-    } catch (e) {
-      date = null;
-    }
-
-    if (date == null) {
-      return 'Invalid end date';
-    }
-
-    return null;
-  }
-
-  String? validateStartTime(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Start time cannot be empty';
-    }
-
-    List<String> timeParts = value.split(':');
-    if (timeParts.length != 2) {
-      return 'Invalid start time';
-    }
-
-    int hour = int.parse(timeParts[0]);
-    int minute = int.parse(timeParts[1]);
-
-    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-      return 'Invalid start time';
-    }
-
-    return null;
-  }
-
-  String? validateEndTime(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'End time cannot be empty';
-    }
-
-    List<String> timeParts = value.split(':');
-    if (timeParts.length != 2) {
-      return 'Invalid end time';
-    }
-
-    int hour = int.parse(timeParts[0]);
-    int minute = int.parse(timeParts[1]);
-
-    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-      return 'Invalid end time';
-    }
-
     return null;
   }
 }

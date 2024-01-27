@@ -245,11 +245,12 @@ class _EventsPageState extends State<EventsPage> {
                     endTime.minute,
                   );
             
+                  
                   // Define the initial event
                   final event = CalendarEventData<Event>(
                     color: _recurrence == Recurrence.oneDay ? AppColors.primaryColor: AppColors.secondaryColor, 
                     title: titleController.text,
-                    event: Event(title: titleController.text),
+                    event: Event(title: titleController.text, id: ''),
                     description: descController.text,
                     date: startDateTime,
                     endDate: endDateTime,
@@ -266,7 +267,7 @@ class _EventsPageState extends State<EventsPage> {
                       var recurringEvent = CalendarEventData<Event>(
                         color:AppColors.secondaryColor,
                         title: event.title,
-                        event: Event(title: event.title),
+                        event: Event(title: event.title, id: ''),
                         description: event.description,
                         date: recurringStartDate,
                         endDate: recurringEndDate,

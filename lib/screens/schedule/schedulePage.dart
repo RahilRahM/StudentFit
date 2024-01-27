@@ -137,7 +137,7 @@ class _ScheduleState extends State<Schedule>
       ),
       builder: (BuildContext context) {
         return FractionallySizedBox(
-          heightFactor: 0.35, // Reduced height factor as needed
+          heightFactor: 0.35,
           child: Container(
             padding: EdgeInsets.all(16.0),
             decoration: BoxDecoration(
@@ -202,14 +202,13 @@ class _ScheduleState extends State<Schedule>
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildActionButton(Icons.edit, 'Edit', AppColors.primaryColor, () {
-                      // Implement edit functionality - Navigate to EditEventPage
                       Navigator.pop(context); // Close the bottom sheet first
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => EditEventPage(
-                            eventController: widget.eventController,// Pass the event controller
-                            // Pass the event you want to edit
+                            eventController: widget.eventController,
+                            event: event, // Pass the event to be edited
                           ),
                         ),
                       );
@@ -369,40 +368,53 @@ class _ScheduleState extends State<Schedule>
 }
 
 Map<String, dynamic> eventToJson(
-    CalendarEventData<Event> event, Recurrence recurrenceType) {
-  return {
-    'title': event.title,
-    'description': event.description,
-    'date': event.date.toIso8601String(),
-    'endDate': event.endDate.toIso8601String(),
-    'startTime': event.startTime?.toIso8601String(),
-    'endTime': event.endTime?.toIso8601String(),
-    'recurrence':
-        recurrenceType == Recurrence.everyWeek ? 'everyWeek' : 'oneDay',
-  };
+  CalendarEventData<Event> event, Recurrence recurrenceType) {
+return {
+  'id': event.event?.id,
+  'title': event.title,
+  'description': event.description,
+  'date': event.date.toIso8601String(),
+  'endDate': event.endDate.toIso8601String(),
+  'startTime': event.startTime?.toIso8601String(),
+  'endTime': event.endTime?.toIso8601String(),
+  'recurrence':
+      recurrenceType == Recurrence.everyWeek ? 'everyWeek' : 'oneDay',
+};
 }
+
 
 CalendarEventData<Event> jsonToEvent(Map<String, dynamic> jsonData) {
   var recurrenceType = jsonData['recurrence'] == 'everyWeek'
       ? Recurrence.everyWeek
       : Recurrence.oneDay;
 
+  // Ensure that 'id' is present and is a String. If it's not, you might throw an error or handle it appropriately
+  String eventId = jsonData['id'] as String? ?? 'defaultId';  // Replace 'defaultId' with a suitable default or error handling
+
   return CalendarEventData<Event>(
-    title: jsonData['title'],
-    description: jsonData['description'],
-    date: DateTime.parse(jsonData['date']),
-    endDate: DateTime.parse(jsonData['endDate']),
+    event: Event(
+      id: eventId, // Use the parsed id
+      title: jsonData['title'] as String? ?? '', // Default to empty string if null
+      description: jsonData['description'] as String?, // Already allows null
+    ),
+    title: jsonData['title'] as String? ?? '', // Default to empty string if null
+    description: jsonData['description'] as String, // Already allows null
+    date: DateTime.parse(jsonData['date'] as String), // Cast as String for type safety
+    endDate: DateTime.parse(jsonData['endDate'] as String), // Cast as String for type safety
     startTime: jsonData['startTime'] != null
-        ? DateTime.parse(jsonData['startTime'])
+        ? DateTime.parse(jsonData['startTime'] as String) // Cast as String for type safety
         : null,
     endTime: jsonData['endTime'] != null
-        ? DateTime.parse(jsonData['endTime'])
+        ? DateTime.parse(jsonData['endTime'] as String) // Cast as String for type safety
         : null,
     color: recurrenceType == Recurrence.everyWeek
         ? AppColors.secondaryColor
         : AppColors.primaryColor,
+    // ... other fields ...
   );
 }
+
+
 
 CalendarEventData<Event> copyEventWithNewDate(
     CalendarEventData<Event> event, DateTime newDate) {
