@@ -101,12 +101,29 @@ class Schedule extends StatefulWidget {
 // _ScheduleState class that holds the state for Schedule
 class _ScheduleState extends State<Schedule>
     with SingleTickerProviderStateMixin {
+  final EventController<Event> eventController = EventController<Event>();
   Future<void> _saveEvent(
       CalendarEventData<Event> event, Recurrence recurrence) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
     savedEvents.add(jsonEncode(eventToJson(event, recurrence)));
     await prefs.setStringList('savedEvents', savedEvents);
+  }
+
+  Future<void> _deleteEvent(CalendarEventData<Event> event) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
+      savedEvents.removeWhere((jsonString) {
+        final jsonData = jsonDecode(jsonString);
+        final savedEvent = jsonToEvent(jsonData);
+        return savedEvent.date == event.date && savedEvent.title == event.title;
+      });
+      await prefs.setStringList('savedEvents', savedEvents);
+      eventController.remove(event);
+    } catch (e) {
+      print("Error deleting event: $e");
+    }
   }
 
   Future<void> _loadEvents() async {
@@ -127,7 +144,6 @@ class _ScheduleState extends State<Schedule>
     }
   }
 
-  
   void _onEventTap(CalendarEventData<Event> event) {
     showModalBottomSheet(
       context: context,
@@ -152,7 +168,6 @@ class _ScheduleState extends State<Schedule>
                   children: [
                     CircleAvatar(
                       radius: 5.0,
-                  
                     ),
                     SizedBox(width: 18),
                     Expanded(
@@ -168,17 +183,19 @@ class _ScheduleState extends State<Schedule>
                     ),
                   ],
                 ),
-                
+
                 SizedBox(height: 50),
-                
+
                 // Date and time row
                 Row(
                   children: [
-                    Icon(Icons.access_time, color:AppColors.primaryColor),
+                    Icon(Icons.access_time, color: AppColors.primaryColor),
                     SizedBox(width: 10),
                     Text(
                       '${DateFormat('HH:mm').format(event.startTime!)} – ${DateFormat('HH:mm').format(event.endTime!)}',
-                      style: TextStyle(fontSize: 18, color: const Color.fromARGB(255, 128, 126, 126)),
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: const Color.fromARGB(255, 128, 126, 126)),
                     ),
                   ],
                 ),
@@ -195,13 +212,13 @@ class _ScheduleState extends State<Schedule>
                   ],
                 ),
 
-            
                 Divider(color: Colors.grey[300], thickness: 1, height: 20),
                 SizedBox(height: 40),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildActionButton(Icons.edit, 'Edit', AppColors.primaryColor, () {
+                    _buildActionButton(
+                        Icons.edit, 'Edit', AppColors.primaryColor, () {
                       Navigator.pop(context); // Close the bottom sheet first
                       Navigator.push(
                         context,
@@ -214,7 +231,9 @@ class _ScheduleState extends State<Schedule>
                       );
                     }),
                     _buildActionButton(Icons.delete, 'Delete', Colors.red, () {
-                      // TODO: Implement delete functionality
+                      _deleteEvent(event); // Call the delete event function
+                      Navigator.pop(
+                          context); // Close the bottom sheet after deleting
                     }),
                   ],
                 ),
@@ -225,18 +244,17 @@ class _ScheduleState extends State<Schedule>
       },
     );
   }
-  
+
   // Helper method to build the action buttons
-  Widget _buildActionButton(IconData icon, String text, Color color, VoidCallback onPressed) {
+  Widget _buildActionButton(
+      IconData icon, String text, Color color, VoidCallback onPressed) {
     return TextButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, color: color),
       label: Text(text, style: TextStyle(color: color)),
     );
   }
-  
-  
-  
+
   Widget _buildDetailRow(IconData icon, String text) {
     return Row(
       children: [
@@ -246,9 +264,6 @@ class _ScheduleState extends State<Schedule>
       ],
     );
   }
-  
-
-  
 
   @override
   void initState() {
@@ -265,7 +280,8 @@ class _ScheduleState extends State<Schedule>
         alignment: Alignment.topCenter,
         children: [
           WeekView(
-            controller: CalendarControllerProvider.of<Event>(context).controller,
+            controller:
+                CalendarControllerProvider.of<Event>(context).controller,
             showLiveTimeLineInAllDays: true,
             startDay: WeekDays.sunday,
             headerStyle: const HeaderStyle(
@@ -300,7 +316,7 @@ class _ScheduleState extends State<Schedule>
               Color otherDayColor = Colors.transparent;
               String dayAndDate = DateFormat('E dd').format(dayIndex);
               String day = dayAndDate.substring(0, 1);
-              
+
               String daynumber = dayAndDate.substring(3);
               return WeekDayTile(
                 dayIndex: dayOfWeek,
@@ -316,7 +332,7 @@ class _ScheduleState extends State<Schedule>
             eventTileBuilder: (context, events, bounds, start, end) {
               if (events.isNotEmpty) {
                 CalendarEventData<Event> event = events.first;
-            
+
                 return GestureDetector(
                   onTap: () => _onEventTap(event),
                   child: Container(
@@ -324,7 +340,7 @@ class _ScheduleState extends State<Schedule>
                     height: bounds.height,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: event.color ,
+                      color: event.color,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -334,10 +350,9 @@ class _ScheduleState extends State<Schedule>
                   ),
                 );
               }
-              return Container();  // Return an empty container for empty 'events' list
-            },                                    
+              return Container(); // Return an empty container for empty 'events' list
+            },
           ),
-          
           Positioned(
             bottom: 16.0,
             right: 16.0,
@@ -358,7 +373,7 @@ class _ScheduleState extends State<Schedule>
                   },
                 );
               },
-             child: const Icon(Icons.add),
+              child: const Icon(Icons.add),
             ),
           ),
         ],
@@ -368,20 +383,19 @@ class _ScheduleState extends State<Schedule>
 }
 
 Map<String, dynamic> eventToJson(
-  CalendarEventData<Event> event, Recurrence recurrenceType) {
-return {
-  'id': event.event?.id,
-  'title': event.title,
-  'description': event.description,
-  'date': event.date.toIso8601String(),
-  'endDate': event.endDate.toIso8601String(),
-  'startTime': event.startTime?.toIso8601String(),
-  'endTime': event.endTime?.toIso8601String(),
-  'recurrence':
-      recurrenceType == Recurrence.everyWeek ? 'everyWeek' : 'oneDay',
-};
+    CalendarEventData<Event> event, Recurrence recurrenceType) {
+  return {
+    'id': event.event?.id,
+    'title': event.title,
+    'description': event.description,
+    'date': event.date.toIso8601String(),
+    'endDate': event.endDate.toIso8601String(),
+    'startTime': event.startTime?.toIso8601String(),
+    'endTime': event.endTime?.toIso8601String(),
+    'recurrence':
+        recurrenceType == Recurrence.everyWeek ? 'everyWeek' : 'oneDay',
+  };
 }
-
 
 CalendarEventData<Event> jsonToEvent(Map<String, dynamic> jsonData) {
   var recurrenceType = jsonData['recurrence'] == 'everyWeek'
@@ -389,23 +403,30 @@ CalendarEventData<Event> jsonToEvent(Map<String, dynamic> jsonData) {
       : Recurrence.oneDay;
 
   // Ensure that 'id' is present and is a String. If it's not, you might throw an error or handle it appropriately
-  String eventId = jsonData['id'] as String? ?? 'defaultId';  // Replace 'defaultId' with a suitable default or error handling
+  String eventId = jsonData['id'] as String? ??
+      'defaultId'; // Replace 'defaultId' with a suitable default or error handling
 
   return CalendarEventData<Event>(
     event: Event(
       id: eventId, // Use the parsed id
-      title: jsonData['title'] as String? ?? '', // Default to empty string if null
+      title:
+          jsonData['title'] as String? ?? '', // Default to empty string if null
       description: jsonData['description'] as String?, // Already allows null
     ),
-    title: jsonData['title'] as String? ?? '', // Default to empty string if null
+    title:
+        jsonData['title'] as String? ?? '', // Default to empty string if null
     description: jsonData['description'] as String, // Already allows null
-    date: DateTime.parse(jsonData['date'] as String), // Cast as String for type safety
-    endDate: DateTime.parse(jsonData['endDate'] as String), // Cast as String for type safety
+    date: DateTime.parse(
+        jsonData['date'] as String), // Cast as String for type safety
+    endDate: DateTime.parse(
+        jsonData['endDate'] as String), // Cast as String for type safety
     startTime: jsonData['startTime'] != null
-        ? DateTime.parse(jsonData['startTime'] as String) // Cast as String for type safety
+        ? DateTime.parse(
+            jsonData['startTime'] as String) // Cast as String for type safety
         : null,
     endTime: jsonData['endTime'] != null
-        ? DateTime.parse(jsonData['endTime'] as String) // Cast as String for type safety
+        ? DateTime.parse(
+            jsonData['endTime'] as String) // Cast as String for type safety
         : null,
     color: recurrenceType == Recurrence.everyWeek
         ? AppColors.secondaryColor
@@ -413,8 +434,6 @@ CalendarEventData<Event> jsonToEvent(Map<String, dynamic> jsonData) {
     // ... other fields ...
   );
 }
-
-
 
 CalendarEventData<Event> copyEventWithNewDate(
     CalendarEventData<Event> event, DateTime newDate) {
