@@ -8,6 +8,7 @@ import 'schedule_widgets/addEventForm.dart';
 import 'package:StudentFit/commons/colors.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:StudentFit/screens/schedule/schedule_widgets/editEventPage.dart';
 
 class EventWrapper {
   final CalendarEventData<Event> event;
@@ -70,15 +71,8 @@ class ScheduleState extends State<SchedulePage> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-          appBar: CustomAppBar2(
-            appBarTitle: 'Schedule',
-            showFavoriteIcon: false,
-            leadingIcon: Icons.arrow_back_ios,
-            onLeadingPressed: () {
-              Navigator.pop(context);
-            },
-            actions: [],
-          ),
+          appBar: const CustomAppBar2(appBarTitle: "Schedule", actions: []),
+      
           body: Schedule(eventController: eventController),
           drawer: buildDrawer(context),
         ),
@@ -100,12 +94,29 @@ class Schedule extends StatefulWidget {
 // _ScheduleState class that holds the state for Schedule
 class _ScheduleState extends State<Schedule>
     with SingleTickerProviderStateMixin {
+  final EventController<Event> eventController = EventController<Event>();
   Future<void> _saveEvent(
       CalendarEventData<Event> event, Recurrence recurrence) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
     savedEvents.add(jsonEncode(eventToJson(event, recurrence)));
     await prefs.setStringList('savedEvents', savedEvents);
+  }
+
+  Future<void> _deleteEvent(CalendarEventData<Event> event) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
+      savedEvents.removeWhere((jsonString) {
+        final jsonData = jsonDecode(jsonString);
+        final savedEvent = jsonToEvent(jsonData);
+        return savedEvent.date == event.date && savedEvent.title == event.title;
+      });
+      await prefs.setStringList('savedEvents', savedEvents);
+      eventController.remove(event);
+    } catch (e) {
+      print("Error deleting event: $e");
+    }
   }
 
   Future<void> _loadEvents() async {
@@ -115,6 +126,7 @@ class _ScheduleState extends State<Schedule>
       for (String jsonString in savedEvents) {
         final jsonData = jsonDecode(jsonString);
         if (jsonData != null && jsonData is Map<String, dynamic>) {
+          // ignore: unused_local_variable
           final event = jsonToEvent(jsonData);
         } else {
           print('Invalid or null JSON data encountered');
@@ -134,7 +146,7 @@ class _ScheduleState extends State<Schedule>
       ),
       builder: (BuildContext context) {
         return FractionallySizedBox(
-          heightFactor: 0.6, // Adjust the height factor as needed
+          heightFactor: 0.35,
           child: Container(
             padding: EdgeInsets.all(16.0),
             decoration: BoxDecoration(
@@ -144,63 +156,78 @@ class _ScheduleState extends State<Schedule>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  event.title,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                  ),
-                ),
-                SizedBox(height: 10),
+                // Event title with the leading colored icon
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, color: Colors.grey),
-                    SizedBox(width: 10),
-                    Text(
-                      DateFormat('EEEE, MMMM d').format(event.date),
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    CircleAvatar(
+                      radius: 5.0,
+                    ),
+                    SizedBox(width: 18),
+                    Expanded(
+                      child: Text(
+                        event.title,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 25,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
-                SizedBox(height: 10),
+
+                SizedBox(height: 50),
+
+                // Date and time row
                 Row(
                   children: [
-                    Icon(Icons.access_time, color: Colors.grey),
+                    Icon(Icons.access_time, color: AppColors.primaryColor),
                     SizedBox(width: 10),
                     Text(
                       '${DateFormat('HH:mm').format(event.startTime!)} – ${DateFormat('HH:mm').format(event.endTime!)}',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: const Color.fromARGB(255, 128, 126, 126)),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-                Text(
-                  event.description,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                Divider(color: Colors.grey[300], thickness: 1, height: 20),
+                SizedBox(height: 30),
+                Row(
+                  children: [
+                    Icon(Icons.description, color: AppColors.primaryColor),
+                    SizedBox(width: 10),
+                    Text(
+                      event.description,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    ),
+                  ],
                 ),
-                Spacer(),
+
+                Divider(color: Colors.grey[300], thickness: 1, height: 20),
+                SizedBox(height: 40),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    TextButton.icon(
-                      onPressed: () {
-                        // TODO: Implement edit functionality
-                      },
-                      icon: Icon(Icons.edit,
-                          color: Theme.of(context).primaryColor),
-                      label: Text('Edit',
-                          style:
-                              TextStyle(color: Theme.of(context).primaryColor)),
-                    ),
-                    TextButton.icon(
-                      onPressed: () {
-                        // TODO: Implement delete functionality
-                      },
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      label:
-                          Text('Delete', style: TextStyle(color: Colors.red)),
-                    ),
+                    _buildActionButton(
+                        Icons.edit, 'Edit', AppColors.primaryColor, () {
+                      Navigator.pop(context); // Close the bottom sheet first
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditEventPage(
+                            eventController: widget.eventController,
+                            event: event, // Pass the event to be edited
+                          ),
+                        ),
+                      );
+                    }),
+                    _buildActionButton(Icons.delete, 'Delete', Colors.red, () {
+                      _deleteEvent(event); // Call the delete event function
+                      Navigator.pop(
+                          context); // Close the bottom sheet after deleting
+                    }),
                   ],
                 ),
               ],
@@ -211,8 +238,25 @@ class _ScheduleState extends State<Schedule>
     );
   }
 
-// The EventEditingPage should be a new screen where users can edit event details
-// After editing, the page should return the edited event
+  // Helper method to build the action buttons
+  Widget _buildActionButton(
+      IconData icon, String text, Color color, VoidCallback onPressed) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, color: color),
+      label: Text(text, style: TextStyle(color: color)),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.grey),
+        SizedBox(width: 10),
+        Text(text, style: TextStyle(fontSize: 18, color: Colors.grey)),
+      ],
+    );
+  }
 
   @override
   void initState() {
@@ -230,6 +274,7 @@ class _ScheduleState extends State<Schedule>
         children: [
           WeekView(
             controller:
+               
                 CalendarControllerProvider.of<Event>(context).controller,
             showLiveTimeLineInAllDays: true,
             startDay: WeekDays.sunday,
@@ -289,7 +334,7 @@ class _ScheduleState extends State<Schedule>
                     height: bounds.height,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: event.color ?? Colors.blue,
+                      color: event.color,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -334,6 +379,7 @@ class _ScheduleState extends State<Schedule>
 Map<String, dynamic> eventToJson(
     CalendarEventData<Event> event, Recurrence recurrenceType) {
   return {
+    'id': event.event?.id,
     'title': event.title,
     'description': event.description,
     'date': event.date.toIso8601String(),
@@ -350,20 +396,36 @@ CalendarEventData<Event> jsonToEvent(Map<String, dynamic> jsonData) {
       ? Recurrence.everyWeek
       : Recurrence.oneDay;
 
+  // Ensure that 'id' is present and is a String. If it's not, you might throw an error or handle it appropriately
+  String eventId = jsonData['id'] as String? ??
+      'defaultId'; // Replace 'defaultId' with a suitable default or error handling
+
   return CalendarEventData<Event>(
-    title: jsonData['title'],
-    description: jsonData['description'],
-    date: DateTime.parse(jsonData['date']),
-    endDate: DateTime.parse(jsonData['endDate']),
+    event: Event(
+      id: eventId, // Use the parsed id
+      title:
+          jsonData['title'] as String? ?? '', // Default to empty string if null
+      description: jsonData['description'] as String?, // Already allows null
+    ),
+    title:
+        jsonData['title'] as String? ?? '', // Default to empty string if null
+    description: jsonData['description'] as String, // Already allows null
+    date: DateTime.parse(
+        jsonData['date'] as String), // Cast as String for type safety
+    endDate: DateTime.parse(
+        jsonData['endDate'] as String), // Cast as String for type safety
     startTime: jsonData['startTime'] != null
-        ? DateTime.parse(jsonData['startTime'])
+        ? DateTime.parse(
+            jsonData['startTime'] as String) // Cast as String for type safety
         : null,
     endTime: jsonData['endTime'] != null
-        ? DateTime.parse(jsonData['endTime'])
+        ? DateTime.parse(
+            jsonData['endTime'] as String) // Cast as String for type safety
         : null,
     color: recurrenceType == Recurrence.everyWeek
         ? AppColors.secondaryColor
         : AppColors.primaryColor,
+    // ... other fields ...
   );
 }
 

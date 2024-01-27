@@ -48,6 +48,7 @@ class _CalendarPageState extends State<CalendarPage> {
       final endTime = event.endTime != null
           ? DateFormat('h:mm a').format(event.endTime!)
           : 'Unknown Time';
+      // ignore: unnecessary_null_comparison
       final date = event.date != null
           ? DateFormat('MMM d, yyyy').format(event.date)
           : 'Unknown Date';

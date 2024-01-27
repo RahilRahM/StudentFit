@@ -1,7 +1,7 @@
 import '../food/snack.dart';
 import '../food/lunch.dart';
-import '../food/recipe.dart';
 import '../food/dinner.dart';
+import '../food/recipe.dart';
 import '../food/breakfast.dart';
 import '../profile/profile.dart';
 import 'home_widgets/app_bar.dart';
@@ -35,7 +35,7 @@ class HomePage extends StatelessWidget {
         '/homepage': (context) => const HomePage(
               appBarTitle: 'Home',
             ),
-        '/recipepage': (context) => RecipePage(),
+       '/recipepage': (context) => RecipePage(),
         '/profile': (context) => ProfilePage(),
         '/logout': (context) => LogInPage(),
         '/calendar': (context) => const CalendarPage(),

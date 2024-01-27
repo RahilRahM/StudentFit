@@ -2,26 +2,27 @@ import 'dart:convert';
 import './event.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:StudentFit/commons/colors.dart';
+import 'package:student_fit/commons/colors.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:StudentFit/screens/schedule/schedulePage.dart';
+import 'package:student_fit/screens/schedule/schedulePage.dart';
+import 'package:student_fit/screens/schedule/schedule_widgets/addEventForm.dart';
 
-enum Recurrence { oneDay, everyWeek }
-
-class EventsPage extends StatefulWidget {
+class EditEventPage extends StatefulWidget {
   final EventController<Event> eventController;
+  final CalendarEventData<Event> event;
 
-  const EventsPage({Key? key, required this.eventController}) : super(key: key);
+  const EditEventPage(
+      {Key? key, required this.eventController, required this.event})
+      : super(key: key);
 
   @override
-  State<EventsPage> createState() => _EventsPageState();
+  State<EditEventPage> createState() => _EditEventPage();
 }
 
-class _EventsPageState extends State<EventsPage> {
-  final _formKey = GlobalKey<FormState>(); // Form key added here
+class _EditEventPage extends State<EditEventPage> {
+  final _formKey = GlobalKey<FormState>();
 
-  EventController controller = EventController();
   TextEditingController titleController = TextEditingController();
   TextEditingController startDateController = TextEditingController();
   TextEditingController endDateController = TextEditingController();
@@ -29,61 +30,52 @@ class _EventsPageState extends State<EventsPage> {
   TextEditingController endTimeController = TextEditingController();
   TextEditingController descController = TextEditingController();
 
-  TimeOfDay startTime = TimeOfDay.now();
-  TimeOfDay endTime = TimeOfDay.now();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
-  Recurrence _recurrence = Recurrence.oneDay;
+  TimeOfDay startTime = TimeOfDay.now();
+  TimeOfDay endTime = TimeOfDay.now();
 
-  Future<void> _saveEvent(CalendarEventData<Event> event) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
-    savedEvents.add(jsonEncode(eventToJson(event, _recurrence)));
-    await prefs.setStringList('savedEvents', savedEvents);
+  @override
+  void initState() {
+    super.initState();
+    // Populate the fields with the event data
+    titleController.text = widget.event.title;
+    descController.text = widget.event.description;
+    startDateController.text = DateFormat.yMd().format(widget.event.date);
+    endDateController.text = DateFormat.yMd().format(widget.event.endDate);
+    startTimeController.text = DateFormat('HH:mm').format(DateTime(
+        widget.event.date.year,
+        widget.event.date.month,
+        widget.event.date.day,
+       ));
+    endTimeController.text = DateFormat('HH:mm').format(DateTime(
+        widget.event.date.year,
+        widget.event.date.month,
+        widget.event.date.day,
+       ));
   }
 
-  Widget _buildRecurrenceOption() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Radio(
-          value: Recurrence.oneDay,
-          groupValue: _recurrence,
-          onChanged: (Recurrence? value) {
-            setState(() {
-              _recurrence = value!;
-            });
-          },
-          fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-            if (states.contains(MaterialState.selected)) {
-              return AppColors.primaryColor; // Color when selected
-            }
-            return Colors.grey; // Color when not selected
-          }),
-        ),
-        Container(
-          padding: EdgeInsets.zero, // Zero padding around the text
-          child: const Text('One Day'),
-        ),
-        const SizedBox(width: 90), // Space between options
-        Radio(
-          value: Recurrence.everyWeek,
-          groupValue: _recurrence,
-          onChanged: (Recurrence? value) {
-            setState(() {
-              _recurrence = value!;
-            });
-          },
-          fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-            if (states.contains(MaterialState.selected)) {
-              return AppColors.primaryColor; // Color when selected
-            }
-            return Colors.grey; // Color when not selected
-          }),
-        ),
-        const Text('Every Week'),
-      ],
-    );
+  Future<void> _updateEvent(
+    CalendarEventData<Event> newEvent,
+    Recurrence recurrence,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
+
+    // Assuming you have a unique way to identify events, such as by title
+    int eventIndex = savedEvents.indexWhere((jsonString) {
+      final existingEvent = jsonToEvent(jsonDecode(jsonString));
+      return existingEvent.title ==
+          widget.event.title; // Use a unique identifier here
+    });
+
+    if (eventIndex != -1) {
+      savedEvents[eventIndex] = jsonEncode(
+        eventToJson(newEvent, recurrence),
+      );
+      await prefs.setStringList('savedEvents', savedEvents);
+      // Update the UI and event controller as necessary
+    }
   }
 
   @override
@@ -104,7 +96,7 @@ class _EventsPageState extends State<EventsPage> {
                 const Padding(
                   padding: EdgeInsets.only(bottom: 25.0),
                   child: Text(
-                    'Add new event',
+                    'Edit event',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.black,
@@ -176,7 +168,6 @@ class _EventsPageState extends State<EventsPage> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                _buildRecurrenceOption(),
                 const SizedBox(height: 10),
                 Textinput(
                   controller: descController,
@@ -193,31 +184,6 @@ class _EventsPageState extends State<EventsPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // Cancel Button
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: AppColors.primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(32),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 19,
-                ),
-              ),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(
-                  color: AppColors.primaryColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
             ElevatedButton(
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
@@ -238,53 +204,21 @@ class _EventsPageState extends State<EventsPage> {
                     endTime.hour,
                     endTime.minute,
                   );
-            
-                  // Define the initial event
-                  final event = CalendarEventData<Event>(
-                    color: _recurrence == Recurrence.oneDay
-                        ? AppColors.primaryColor
-                        : AppColors.secondaryColor,
+                  CalendarEventData<Event> updatedEvent =
+                      CalendarEventData<Event>(
                     title: titleController.text,
                     event: Event(title: titleController.text, id: ''),
                     description: descController.text,
-                    date: startDateTime,
-                    endDate: endDateTime,
+                    date: startDate,
+                    endDate: endDate,
                     startTime: startDateTime,
                     endTime: endDateTime,
                   );
 
-                  if (_recurrence == Recurrence.everyWeek) {
-                    DateTime recurringStartDate = startDateTime;
-                    DateTime recurringEndDate = endDateTime;
+                  // Call the update method, assuming the recurrence is 'oneDay'
+                  await _updateEvent(updatedEvent, Recurrence.oneDay);
 
-                    // Loop to create events for each week
-                    while (recurringStartDate
-                        .isBefore(DateTime.now().add(Duration(days: 365)))) {
-                      var recurringEvent = CalendarEventData<Event>(
-                        color: AppColors.secondaryColor,
-                        title: event.title,
-                        event: Event(title: event.title, id: ''),
-                        description: event.description,
-                        date: recurringStartDate,
-                        endDate: recurringEndDate,
-                        startTime: recurringStartDate,
-                        endTime: recurringEndDate,
-                      );
-
-                      widget.eventController.add(recurringEvent);
-                      await _saveEvent(recurringEvent);
-
-                      // Advance the dates by one week
-                      recurringStartDate =
-                          recurringStartDate.add(Duration(days: 7));
-                      recurringEndDate =
-                          recurringEndDate.add(Duration(days: 7));
-                    }
-                  } else {
-                    widget.eventController.add(event); // Add a single event
-                    await _saveEvent(event);
-                  }
-
+                  // Pop the current screen
                   Navigator.of(context).pop();
                 }
               },
@@ -299,7 +233,7 @@ class _EventsPageState extends State<EventsPage> {
                 ),
               ),
               child: const Text(
-                'Done',
+                'Save',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -387,152 +321,5 @@ class _EventsPageState extends State<EventsPage> {
       return 'Title cannot be empty';
     }
     return null;
-  }
-
-  String? validateEvent(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Event cannot be empty';
-    }
-    return null;
-  }
-
-  String? validateStartDate(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Start date cannot be empty';
-    }
-
-    DateTime? date;
-    try {
-      date = DateFormat.yMd().parse(value);
-    } catch (e) {
-      date = null;
-    }
-
-    if (date == null) {
-      return 'Invalid start date';
-    }
-
-    return null;
-  }
-
-  String? validateEndDate(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'End date cannot be empty';
-    }
-
-    DateTime? date;
-    try {
-      date = DateFormat.yMd().parse(value);
-    } catch (e) {
-      date = null;
-    }
-
-    if (date == null) {
-      return 'Invalid end date';
-    }
-
-    return null;
-  }
-
-  String? validateStartTime(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Start time cannot be empty';
-    }
-
-    List<String> timeParts = value.split(':');
-    if (timeParts.length != 2) {
-      return 'Invalid start time';
-    }
-
-    int hour = int.parse(timeParts[0]);
-    int minute = int.parse(timeParts[1]);
-
-    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-      return 'Invalid start time';
-    }
-
-    return null;
-  }
-
-  String? validateEndTime(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'End time cannot be empty';
-    }
-
-    List<String> timeParts = value.split(':');
-    if (timeParts.length != 2) {
-      return 'Invalid end time';
-    }
-
-    int hour = int.parse(timeParts[0]);
-    int minute = int.parse(timeParts[1]);
-
-    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-      return 'Invalid end time';
-    }
-
-    return null;
-  }
-}
-
-// ignore: must_be_immutable
-class Textinput extends StatelessWidget {
-  Textinput({
-    Key? key,
-    required this.controller,
-    required this.label,
-    this.prefixIcon,
-    this.line = 1,
-    this.onTap,
-    this.validator,
-    this.readOnly = false,
-  }) : super(key: key);
-
-  TextEditingController controller;
-  String label;
-  int line;
-  IconData? prefixIcon;
-  Function()? onTap;
-  bool readOnly;
-  String? Function(String?)? validator;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      maxLines: line,
-      onTap: onTap,
-      readOnly: readOnly,
-      validator: validator,
-      decoration: InputDecoration(
-        errorStyle: const TextStyle(
-          color: Colors.red,
-        ),
-        labelText: label,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE3E3E3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE3E3E3)),
-        ),
-        fillColor: const Color(0xFFE3E3E3),
-        filled: true,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-        contentPadding: const EdgeInsets.all(10.0),
-        labelStyle: const TextStyle(
-          color: Color(0xFF787878),
-          fontSize: 14,
-          fontFamily: 'Nunito',
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      style: const TextStyle(
-        color: Colors.black,
-        fontSize: 18,
-      ),
-      textAlign: TextAlign.start,
-    );
   }
 }
