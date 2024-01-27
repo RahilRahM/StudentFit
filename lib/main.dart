@@ -38,7 +38,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await my_init_app();
   runApp(MaterialApp(
-    home: prefs!.getBool('isLoggedIn') == true ? HomePage(appBarTitle: 'Home',) : MyApp(),
+    home: prefs!.getBool('isLoggedIn') == true ? HomePage(appBarTitle: 'Home') : MyApp(),
   ));
 }
 

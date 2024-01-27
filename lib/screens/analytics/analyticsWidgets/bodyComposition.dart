@@ -14,27 +14,24 @@ class BodyComposition extends StatelessWidget {
         showTitles: true,
         interval: 1,
         getTitlesWidget: (value, meta) {
-          if (value.toInt() < dates.length) {
-            var date = dates[value.toInt()];
-            return SideTitleWidget(axisSide: meta.axisSide, child: Text(DateFormat('MMM d').format(date)));
+          final index = value.toInt();
+          if (index < dates.length) {
+            var date = dates[index];
+            return Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Text(
+                DateFormat('MMM d').format(date),
+                style: TextStyle(
+                  color: Color(0xFF555555),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
+                ),
+              ),
+            );
           }
-          return const SizedBox.shrink(); 
+          return Text('');
         },
       );
-    }
-
-
-    List<WeightEntry> generateDummyData() {
-      // Generate dummy weight entries
-      Random random = Random();
-      List<WeightEntry> entries = [];
-      DateTime currentDate = DateTime.now();
-      for (int i = 0; i < 10; i++) {
-        currentDate = currentDate.subtract(Duration(days: 7)); // One week apart
-        double weight = 60 + random.nextDouble() * 10; // Random weight between 60 and 70
-        entries.add(WeightEntry(weight: weight, date: currentDate));
-      }
-      return entries;
     }
 
     List<WeightEntry> weightEntries = generateDummyData();
@@ -44,83 +41,83 @@ class BodyComposition extends StatelessWidget {
       child: Container(
         width: screenWidth * 0.94,
         height: screenHeight * 0.3,
-        decoration: ShapeDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(width: 1),
-            borderRadius: BorderRadius.circular(9),
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // title row
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Text(
-                  'Body Composition',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'SF Pro Display',
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(width: 20),
-                Text(
-                  'View more',
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    color: Color(0xFF1F73F1),
-                    fontSize: 10,
-                    fontFamily: 'SF Pro Display',
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            // statistics
-            Container(
-              padding: const EdgeInsets.all(10),
-              width: double.infinity,
-              height: 200,
-              child: LineChart(
-                LineChartData(
-                  gridData: const FlGridData(show: false),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    bottomTitles: AxisTitles(sideTitles: _bottomTitles(weightEntries.map((entry) => entry.date).toList())),
-                  ),
-                  borderData: FlBorderData(show: true),
-                  clipData: FlClipData.all(),
-                  minX: 0,
-                  maxX: weightEntries.length.toDouble(),
-                  minY: 0,
-                  maxY: 80, // Adjust based on your actual data
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: List.generate(
-                        weightEntries.length,
-                        (index) {
-                          return FlSpot(index.toDouble(), weightEntries[index].weight);
-                        },
-                      ),
-                      isCurved: true,
-                      color: Colors.blue, // You can change the color
-                      dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                  ],
-                ),
-              ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 6,
+              offset: Offset(0, 3),
             ),
           ],
         ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: LineChart(
+            LineChartData(
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: true,
+                getDrawingHorizontalLine: (value) {
+                  return FlLine(
+                    color: const Color(0xFFEEEEEE),
+                    strokeWidth: 1,
+                  );
+                },
+                getDrawingVerticalLine: (value) {
+                  return FlLine(
+                    color: const Color(0xFFEEEEEE),
+                    strokeWidth: 1,
+                  );
+                },
+              ),
+              titlesData: FlTitlesData(
+                show: true,
+                bottomTitles: AxisTitles(sideTitles: _bottomTitles(weightEntries.map((entry) => entry.date).toList())),
+                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              ),
+              borderData: FlBorderData(show: false),
+              minX: 0,
+              maxX: weightEntries.length.toDouble(),
+              minY: 0,
+              maxY: 80, // Adjust based on your actual data
+              lineBarsData: [
+                LineChartBarData(
+                  spots: List.generate(
+                    weightEntries.length,
+                    (index) {
+                      return FlSpot(index.toDouble(), weightEntries[index].weight);
+                    },
+                  ),
+                  isCurved: true,
+                  color: Theme.of(context).primaryColor, // Use the theme color for consistency
+                  barWidth: 5, // Increase the bar width for better visibility
+                  dotData: FlDotData(show: false),
+                  belowBarData: BarAreaData(show: false),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
+  }
+
+  List<WeightEntry> generateDummyData() {
+    Random random = Random();
+    List<WeightEntry> entries = [];
+    DateTime currentDate = DateTime.now();
+    for (int i = 0; i < 10; i++) {
+      currentDate = currentDate.subtract(Duration(days: 7));
+      double weight = 60 + random.nextDouble() * 10;
+      entries.add(WeightEntry(weight: weight, date: currentDate));
+    }
+    entries.sort((a, b) => a.date.compareTo(b.date));
+    return entries;
   }
 }
 

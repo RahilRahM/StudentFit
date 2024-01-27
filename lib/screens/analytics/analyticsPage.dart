@@ -23,7 +23,7 @@ class AnalyticsPage extends StatelessWidget {
               separator(),
               const SizedBox(height: 40),
               BodyComposition(),
-              const SizedBox(height: 20),
+              
             ],
           ),
         ),

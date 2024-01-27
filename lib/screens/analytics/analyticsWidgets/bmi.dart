@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:student_fit/commons/colors.dart';
-
+import 'package:student_fit/main.dart';
+import '../../../utils/infoAuth.dart';
 
 class BMICalculatorWidget extends StatefulWidget {
   const BMICalculatorWidget({Key? key}) : super(key: key);
@@ -11,13 +13,24 @@ class BMICalculatorWidget extends StatefulWidget {
 
 class _BMICalculatorWidgetState extends State<BMICalculatorWidget> {
   late int _height;
-  late double _weight;
+  late int _weight;
 
   @override
   void initState() {
     super.initState();
-    _height = 170; // Default height
-    _weight = 70.0; // Default weight
+    _loadUserInfo();
+  }
+
+  void _loadUserInfo() {
+    String? userInfoString = prefs?.getString('user_info');
+    if (userInfoString != null) {
+      Map<String, dynamic> userInfo = jsonDecode(userInfoString);
+      _height = userInfo['height'] ?? 170; 
+      _weight = userInfo['weight'] ?? 70; 
+    } else {
+      _height = 170; // Default height
+      _weight = 70; // Default weight
+    }
   }
 
   double calculateBMI() {
@@ -168,7 +181,7 @@ class _BMICalculatorWidgetState extends State<BMICalculatorWidget> {
                   ),
                 ],
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 15),
               Column(
                 children: [
                   Container(
@@ -315,102 +328,88 @@ class _BMICalculatorWidgetState extends State<BMICalculatorWidget> {
       ),
     );
   }
+Future<void> _showInputDialog(BuildContext context, String title) async {
+  TextEditingController controller = TextEditingController();
+  String inputLabel = title == "Height" ? "Height (cm)" : "Weight (Kg)";
+  bool showError = false;
 
-  Future<void> _showInputDialog(BuildContext context, String title) async {
-    TextEditingController controller = TextEditingController();
-    String inputLabel = title == "Height" ? "Height (cm)" : "Weight (Kg)";
-    bool showError = false;
-
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title:
-              title == "Height" ? Text("Edit $title") : Text("Add New $title"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: inputLabel,
-                  errorText: showError ? 'Invalid $title' : null,
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: showError ? Colors.red : AppColors.primaryColor),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: showError ? Colors.red : Color(0xFFC9C9C9)),
-                  ),
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title == "Height" ? "Edit $title" : "Add New $title"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: inputLabel,
+                errorText: showError ? 'Invalid $title' : null,
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                      color: showError ? Colors.red : AppColors.primaryColor),
                 ),
-                onChanged: (value) {
-                  // Clear the error text when the user starts typing
-                  setState(() {
-                    showError = false;
-                  });
-                },
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                      color: showError ? Colors.red : Color(0xFFC9C9C9)),
+                ),
               ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel',
-                        style: TextStyle(color: AppColors.primaryColor)),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        String inputText = controller.text;
-                        if (inputText.isNotEmpty && isNumeric(inputText)) {
-                          double inputValue = double.parse(inputText);
-                          if (title == 'Height') {
-                            if (inputValue > 50 && inputValue < 250) {
-                              _height = inputValue.toInt();
-                            } else {
-                              showError = true;
-                              return;
-                            }
-                          } else if (title == 'Weight') {
-                            if (inputValue > 20 && inputValue < 300) {
-                              _weight = inputValue;
-                            } else {
-                              showError = true;
-                              return;
-                            }
-                          }
-                        } else {
-                          showError = true;
-                          return;
+              onChanged: (value) {
+                setState(() {
+                  showError = false;
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel',
+                      style: TextStyle(color: AppColors.primaryColor)),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    String inputText = controller.text;
+                    if (inputText.isNotEmpty && isNumeric(inputText)) {
+                      int inputValue = int.parse(inputText);
+                      if (title == 'Height' && inputValue > 50 && inputValue < 250) {
+                        await InfoAuth.updateHeightRecord(inputValue);
+                        if (mounted) {
+                          setState(() => _height = inputValue);
+                          Navigator.pop(context);
                         }
-                      });
-                      // Dismiss the dialog only if there are no errors
-                      if (!showError) {
-                        Navigator.pop(context);
+                      } else if (title == 'Weight' && inputValue > 20 && inputValue < 300) {
+                        // Save weight record
+                        await InfoAuth.saveWeightRecord(inputValue);
+                        if (mounted) {
+                          setState(() => _weight = inputValue);
+                          Navigator.pop(context);
+                        }
+                      } else {
+                        setState(() => showError = true);
                       }
-                    },
-                    child: const Text('OK',
-                        style: TextStyle(color: AppColors.primaryColor)),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  bool isNumeric(String value) {
-    // ignore: unnecessary_null_comparison
-    if (value == null) {
-      return false;
-    }
-    return double.tryParse(value) != null;
-  }
+                    } else {
+                      setState(() => showError = true);
+                    }
+                  },
+                  child: const Text('OK',
+                      style: TextStyle(color: AppColors.primaryColor)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+}
+bool isNumeric(String value) {
+  return double.tryParse(value) != null;
 }
 
 class MeterDesign extends StatelessWidget {
@@ -446,6 +445,3 @@ class MeterDesign extends StatelessWidget {
     );
   }
 }
-
-
- 
