@@ -3,9 +3,9 @@ import '../../commons/colors.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:student_fit/screens/home/homepage.dart';
-import 'package:student_fit/screens/home/home_widgets/app_bar.dart';
-import 'package:student_fit/screens/welcomePages/widgets/widgets.dart';
+import 'package:StudentFit/screens/home/homepage.dart';
+import 'package:StudentFit/screens/home/home_widgets/app_bar.dart';
+import 'package:StudentFit/screens/welcomePages/widgets/widgets.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   final String userEmail;
@@ -172,9 +172,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               if (isPassword)
                 IconButton(
                   icon: Icon(
-                    isPasswordVisible
-                        ? Icons.visibility
-                        : Icons.visibility_off,
+                    isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                     color: AppColors.primaryColor,
                   ),
                   onPressed: () {
@@ -226,7 +224,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       newPasswordController.text,
       confirmPasswordController.text,
     );
-  
+
     if (isNewPasswordValid && isConfirmNewPasswordValid) {
       // Check if the new password is the same as the old one
       if (_isNewPasswordSameAsOld(newPasswordController.text)) {
@@ -235,13 +233,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         });
         return;
       }
-  
+
       String hashedPassword =
           hashPassword(newPasswordController.text, 'unique_salt_for_each_user');
-  
+
       bool passwordUpdateSuccess =
           await updatePasswordInDatabase(widget.userEmail, hashedPassword);
-  
+
       if (passwordUpdateSuccess) {
         Navigator.pushReplacement(
           context,
@@ -259,7 +257,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       }
     }
   }
-  
 
   static String hashPassword(String password, String salt) {
     var bytes = utf8.encode(password + salt);
@@ -281,14 +278,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     }
     return true;
   }
-  
+
   bool _isNewPasswordSameAsOld(String newPassword) {
+    String hashedNewPassword =
+        hashPassword(newPassword, 'unique_salt_for_each_user');
 
-    String hashedNewPassword = hashPassword(newPassword, 'unique_salt_for_each_user');
-  
-
-    String hashedOldPassword = fetchHashedOldPassword(); 
-  
+    String hashedOldPassword = fetchHashedOldPassword();
 
     print('newPassword: $newPassword');
     print('hashedNewPassword: $hashedNewPassword');
@@ -302,12 +297,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       return false;
     }
   }
-  
-  String fetchHashedOldPassword() {
 
+  String fetchHashedOldPassword() {
     return hashPassword(oldPassword, 'unique_salt_for_each_user');
   }
-  
 
   bool _validateConfirmPassword(String password, String confirmPassword) {
     bool passwordsMatch = (password == confirmPassword);

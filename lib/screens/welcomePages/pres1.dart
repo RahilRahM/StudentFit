@@ -1,8 +1,6 @@
 import 'widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:student_fit/screens/welcomePages/pres3.dart';
-
-
+import 'package:StudentFit/screens/welcomePages/pres3.dart';
 
 class Pres1 extends StatelessWidget {
   double screenWidth(BuildContext context) {
@@ -40,7 +38,10 @@ class Pres1 extends StatelessWidget {
             SizedBox(height: screenPadding(context, 0.12)),
             RecipeCarouselTextLines(
               title: 'Enjoy Your Lunch Time',
-              lines: ['Just relax and not overthink what to eat.','We\'re here to make your lunch time experience even better',],
+              lines: [
+                'Just relax and not overthink what to eat.',
+                'We\'re here to make your lunch time experience even better',
+              ],
             ),
             SizedBox(height: screenPadding(context, 0.15)),
           ],

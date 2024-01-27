@@ -1,8 +1,8 @@
 import '../../commons/colors.dart';
 import 'package:flutter/material.dart';
 import '../home/home_widgets/app_bar.dart';
-import 'package:student_fit/commons/button.dart';
-import 'package:student_fit/screens/premium/index.dart';
+import 'package:StudentFit/commons/button.dart';
+import 'package:StudentFit/screens/premium/index.dart';
 
 class PremiumUpgradePage extends StatefulWidget {
   @override

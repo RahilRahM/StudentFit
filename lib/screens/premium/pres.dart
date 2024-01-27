@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../home/home_widgets/app_bar.dart';
-import 'package:student_fit/commons/index.dart';
-import 'package:student_fit/screens/premium/index.dart';
-import 'package:student_fit/screens/welcomePages/widgets/widgets.dart';
+import 'package:StudentFit/commons/index.dart';
+import 'package:StudentFit/screens/premium/index.dart';
+import 'package:StudentFit/screens/welcomePages/widgets/widgets.dart';
 
 class presPage extends StatefulWidget {
   @override
@@ -20,8 +20,8 @@ class _presPageState extends State<presPage> {
         leadingIcon: Icons.arrow_back_ios,
         onLeadingPressed: () {
           Navigator.pop(context);
-        }, actions: [],
-        
+        },
+        actions: [],
       ),
       body: Padding(
         padding: const EdgeInsets.only(bottom: 100),
@@ -29,11 +29,9 @@ class _presPageState extends State<presPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             RecipeCarousel(),
-
             Container(
               width: 360,
               height: 66,
-
               padding: EdgeInsets.zero,
               decoration: const BoxDecoration(
                 color: Colors.transparent,
@@ -42,7 +40,7 @@ class _presPageState extends State<presPage> {
                 'Pick your meal depending\non vegetable of your choice',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.black, 
+                  color: Colors.black,
                   fontFamily: 'Noto Sans HK',
                   fontSize: 23,
                   fontWeight: FontWeight.w500,
@@ -53,16 +51,15 @@ class _presPageState extends State<presPage> {
             ),
             const SizedBox(height: 50),
             CustomElevatedButton2(
-              buttonText: 'Continue',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>  VegetablesPage(),
-                  ),
-                );
-              }
-            ),
+                buttonText: 'Continue',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VegetablesPage(),
+                    ),
+                  );
+                }),
           ],
         ),
       ),

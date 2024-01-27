@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../home/home_widgets/app_bar.dart';
-import 'package:student_fit/commons/index.dart';
+import 'package:StudentFit/commons/index.dart';
 
 class CaloriesDetailPage extends StatelessWidget {
   final Map<String, String> recipeData;
@@ -103,7 +103,7 @@ class MenuWidget extends StatelessWidget {
               237,
               235,
               235,
-            ), 
+            ),
             borderRadius: BorderRadius.circular(8.0),
           ),
           child: Column(

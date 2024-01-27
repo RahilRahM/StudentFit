@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:student_fit/commons/colors.dart';
+import 'package:StudentFit/commons/colors.dart';
 import 'package:table_calendar/table_calendar.dart';
-
-
 
 // Calendar widget with TableCalendar
 class Calendar extends StatefulWidget {
@@ -98,4 +96,3 @@ class _CalendarState extends State<Calendar> {
     );
   }
 }
-

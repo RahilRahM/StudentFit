@@ -1,15 +1,19 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:student_fit/commons/button.dart';
-import 'package:student_fit/commons/colors.dart';
+import 'package:StudentFit/commons/button.dart';
+import 'package:StudentFit/commons/colors.dart';
 import '../../screens/home/home_widgets/app_bar.dart';
 import 'package:email_validator/email_validator.dart';
 import '../../screens/home/home_widgets/side_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../utils/userAuthentication.dart'; // Import UserAuthentication
 
 class EditProfilePage extends StatefulWidget {
   final File? image;
-  final Function(File? image)? onImageChanged; // Add this line
+  final Function(File? image)? onImageChanged;
 
   EditProfilePage({required this.image, this.onImageChanged});
 
@@ -19,28 +23,47 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   File? _tempImage;
-
+  String? userName;
+  String? userEmail;
+  int? userId; // Variable to store user ID
   bool isClicked = false;
+  bool isPasswordVisible = false;
+  bool validateInputEmail = true;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _tempImage = widget.image; // Initialize with the existing image
+    _tempImage = widget.image;
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userDataString = prefs.getString('user');
+    if (userDataString != null) {
+      Map<String, dynamic> userData = jsonDecode(userDataString);
+      setState(() {
+        userName = userData['user_name'];
+        userEmail = userData['user_email'];
+        userId = userData['user_id'];
+        _nameController.text = userName!;
+        _emailController.text = userEmail!;
+      });
+    }
   }
 
   Future<void> _pickImage() async {
     final pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
       setState(() {
-        _tempImage = File(pickedFile.path); // Update the temporary image
+        _tempImage = File(pickedFile.path);
       });
     }
   }
 
-  bool isPasswordVisible = false;
-  bool validateInputEmail = true;
   Widget buildTextField(
     String hintText,
     IconData icon,
@@ -49,7 +72,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     bool isPassword,
     VoidCallback onToggleVisibility,
     double width,
-    bool validateInput, // New parameter for validation
+    bool validateInput,
   ) {
     return Container(
       width: width,
@@ -77,6 +100,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
+              controller:
+                  hintText == 'Full name ' ? _nameController : _emailController,
               obscureText: isPassword && !isPasswordVisible,
               decoration: InputDecoration(
                 hintText: hintText,
@@ -99,6 +124,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  Future<void> _updateProfile() async {
+    if (userId != null) {
+      String newName = _nameController.text;
+      String newEmail = _emailController.text;
+
+      String result =
+          await UserAuthentication.updateUserDetails(userId!, newName);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Updated name!")));
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("User ID is not available")));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -107,9 +147,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       appBar: CustomAppBar2(
         appBarTitle: 'Edit Profile',
         showFavoriteIcon: false,
-        onFavoritePressed: () {
-          // Handle favorite pressed
-        },
         leadingIcon: Icons.arrow_back_ios,
         onLeadingPressed: () {
           Navigator.pop(context);
@@ -170,8 +207,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
               ),
               const SizedBox(height: 16.0),
-              const Text(
-                'Lilia Amk',
+              Text(
+                userName ?? 'Default Name',
                 style: TextStyle(
                   color: Colors.black,
                   fontFamily: 'Inter',
@@ -180,8 +217,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
               ),
               const SizedBox(height: 8.0),
-              const Text(
-                'liliaamk@example.com',
+              Text(
+                userEmail ?? 'example@example.com',
                 style: TextStyle(
                   color: Color(0xFF71839B),
                   fontFamily: 'Inter',
@@ -195,12 +232,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 Icons.person,
                 TextInputType.text,
                 (value) {
-                  // Handle name input
+                  userName = value;
                 },
                 false,
                 () {},
                 screenWidth * 0.9,
-                true, // Set validation to false for full name
+                true,
               ),
               const SizedBox(height: 40),
               buildTextField(
@@ -208,6 +245,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 Icons.email,
                 TextInputType.emailAddress,
                 (value) {
+                  userEmail = value;
                   bool isValid = EmailValidator.validate(value);
                   setState(() {
                     validateInputEmail = isValid;
@@ -216,17 +254,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 false,
                 () {},
                 screenWidth * 0.9,
-                validateInputEmail, // Use the validateInputEmail variable for email validation
+                validateInputEmail,
               ),
               const SizedBox(height: 50),
               CustomElevatedButton2(
                 buttonText: 'Confirm',
-                onPressed: () {
-                  // Update the parent widget with the confirmed image
-                  widget.onImageChanged?.call(_tempImage);
-                  // Navigate back
-                  Navigator.pop(context);
-                },
+                onPressed: _updateProfile,
               ),
             ],
           ),

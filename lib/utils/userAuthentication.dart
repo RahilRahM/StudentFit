@@ -58,7 +58,7 @@ class UserAuthentication {
         // Create a map to store user info
         Map<String, dynamic> user = {
           'user_id': data['id'],
-          'user_name':  data['name'],
+          'user_name': data['name'],
           'user_email': data['email'],
           'user_password': data['password'],
         };
@@ -343,6 +343,43 @@ class UserAuthentication {
       }
     } catch (error) {
       return '$error';
+    }
+  }
+
+  static Future<String> updateUserDetails(int userId, String newName) async {
+    Map<String, dynamic> formData = {
+      'user_id': userId,
+      'name': newName,
+    };
+    print("minouch: ${formData}");
+
+    // Update the local storage with the new name
+    String? userString = prefs?.getString('user');
+    if (userString != null) {
+      Map<String, dynamic> user = jsonDecode(userString);
+      user['user_name'] = newName; // Update the name
+      prefs?.setString(
+          'user', jsonEncode(user)); // Store the updated info
+    }
+    try {
+      var response = await dio.post(
+        api_endpoint_user_update,
+        data:  FormData.fromMap(formData),
+      );
+      print(response);
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = jsonDecode(response.data);
+
+        if (data['status'] == 200) {
+          return 'success';
+        } else {
+          return 'Error: ${data['message']}';
+        }
+      } else {
+        return 'Error: Server responded with status code: ${response.statusCode}';
+      }
+    } catch (e) {
+      return 'Error: Exception when calling the update endpoint: $e';
     }
   }
 

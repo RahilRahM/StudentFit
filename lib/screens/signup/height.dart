@@ -1,7 +1,7 @@
 import '../../commons/colors.dart';
 import 'package:flutter/material.dart';
 import '../../utils/userAuthentication.dart';
-import 'package:student_fit/screens/signup/index.dart';
+import 'package:StudentFit/screens/signup/index.dart';
 
 class HeightPage extends StatefulWidget {
   final int userId;
@@ -22,7 +22,8 @@ class _HeightPageState extends State<HeightPage> {
   }
 
   void actionHandleHeightUpdate(BuildContext context) async {
-    String result = await UserAuthentication.insertHeight(widget.userId, height);
+    String result =
+        await UserAuthentication.insertHeight(widget.userId, height);
 
     if (result == 'success') {
       print('Height added successfully');
@@ -129,7 +130,7 @@ class _HeightPickerState extends State<HeightPicker> {
 
   // Controller for the ListWheelScrollView
   FixedExtentScrollController scrollController =
-    FixedExtentScrollController(initialItem: 50);
+      FixedExtentScrollController(initialItem: 50);
 
   @override
   Widget build(BuildContext context) {

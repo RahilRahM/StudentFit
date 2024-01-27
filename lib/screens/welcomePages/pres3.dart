@@ -1,8 +1,6 @@
 import 'widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:student_fit/screens/welcomePages/pres2.dart';
-
-
+import 'package:StudentFit/screens/welcomePages/pres2.dart';
 
 class Pres2 extends StatelessWidget {
   double screenWidth(BuildContext context) {

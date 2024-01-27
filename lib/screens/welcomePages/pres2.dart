@@ -1,10 +1,6 @@
 import 'widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:student_fit/screens/signup/SignUp.dart';
-
-
-
-
+import 'package:StudentFit/screens/signup/SignUp.dart';
 
 class Pres3 extends StatelessWidget {
   double screenWidth(BuildContext context) {
@@ -42,7 +38,10 @@ class Pres3 extends StatelessWidget {
             SizedBox(height: screenPadding(context, 0.12)),
             PlannerCarouselTextLines(
               title: 'Maximize your planning efficiency',
-              lines: ['Relax and simplify your scheduling','We\'re here to elevate your calendar and task management experience',],
+              lines: [
+                'Relax and simplify your scheduling',
+                'We\'re here to elevate your calendar and task management experience',
+              ],
             ),
             SizedBox(height: screenPadding(context, 0.15)),
           ],

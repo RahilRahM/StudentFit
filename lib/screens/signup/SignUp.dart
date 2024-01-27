@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../utils/userAuthentication.dart';
 import '../welcomePages/widgets/widgets.dart';
 import 'package:email_validator/email_validator.dart';
-import 'package:student_fit/screens/signup/gender.dart';
+import 'package:StudentFit/screens/signup/gender.dart';
 
 class SignUpPage extends StatefulWidget {
   static const PageRoute = '/signup';
@@ -152,7 +152,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   (value) {
                     setState(() {
                       nameError = ''; // Reset error message
-                    // Add your validation logic and update nameError if needed
+                      // Add your validation logic and update nameError if needed
                     });
                   },
                   false,

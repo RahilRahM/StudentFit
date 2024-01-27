@@ -1,6 +1,6 @@
 {
-    "name": "student_fit",
-    "short_name": "student_fit",
+    "name": "StudentFit",
+    "short_name": "StudentFit",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

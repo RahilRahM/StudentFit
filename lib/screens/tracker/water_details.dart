@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:student_fit/commons/index.dart';
+import 'package:StudentFit/commons/index.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:student_fit/screens/home/home_widgets/app_bar.dart';
+import 'package:StudentFit/screens/home/home_widgets/app_bar.dart';
 
 class WaterPage extends StatefulWidget {
   @override
@@ -29,7 +29,8 @@ class _WaterPageState extends State<WaterPage> {
       intakeHistory = prefs.getStringList('intakeHistory') ?? [];
       defaultCupSize = prefs.getDouble('cupSize') ?? defaultCupSize;
     });
-    if (prefs.getString('date') != DateTime.now().toIso8601String().substring(0, 10)) {
+    if (prefs.getString('date') !=
+        DateTime.now().toIso8601String().substring(0, 10)) {
       goalAchievedMessageShown = false;
     }
   }
@@ -37,27 +38,29 @@ class _WaterPageState extends State<WaterPage> {
   Future<void> _updateWaterIntake(double intake) async {
     final prefs = await SharedPreferences.getInstance();
     DateTime now = DateTime.now();
-    String timestamp = "${now.toIso8601String().substring(0, 10)} ${now.hour}:${now.minute}";
-  
+    String timestamp =
+        "${now.toIso8601String().substring(0, 10)} ${now.hour}:${now.minute}";
+
     setState(() {
       waterIntake += intake;
       intakeHistory.add("$timestamp: $intake ml");
     });
-  
+
     await prefs.setDouble('waterIntake', waterIntake);
     await prefs.setStringList('intakeHistory', intakeHistory);
-  
+
     _checkAndShowGoalAchievement(); // Moved inside setState to ensure waterIntake is updated
   }
-  
+
   void _checkAndShowGoalAchievement() {
     if (waterIntake >= goal && !goalAchievedMessageShown) {
-      goalAchievedMessageShown = true;  
+      goalAchievedMessageShown = true;
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
               'Great Job!',
               textAlign: TextAlign.center,
@@ -88,7 +91,7 @@ class _WaterPageState extends State<WaterPage> {
       );
     }
   }
-  
+
   Widget _buildWaterIntakeIndicator() {
     return CircularPercentIndicator(
       radius: 120.0,
@@ -170,7 +173,6 @@ class _WaterPageState extends State<WaterPage> {
           Navigator.pop(context);
         },
         actions: [],
-        
       ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -193,4 +195,3 @@ class _WaterPageState extends State<WaterPage> {
     );
   }
 }
-

@@ -2,8 +2,8 @@ import '../../commons/colors.dart';
 import 'package:flutter/material.dart';
 import '../home/home_widgets/app_bar.dart';
 import '../home/home_widgets/side_bar.dart';
-import 'package:student_fit/screens/premium/proteins.dart';
-import 'package:student_fit/screens/premium/prem_commons.dart';
+import 'package:StudentFit/screens/premium/proteins.dart';
+import 'package:StudentFit/screens/premium/prem_commons.dart';
 
 class FruitsPage extends StatefulWidget {
   @override
@@ -191,7 +191,7 @@ class _FruitsPageState extends State<FruitsPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_forward_ios,
-                color:AppColors.blackColor, size: 30),
+                color: AppColors.blackColor, size: 30),
             onPressed: () {
               showConfirmationDialog();
             },

@@ -3,9 +3,9 @@ import 'otp_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:email_otp/email_otp.dart';
-import 'package:student_fit/commons/colors.dart';
-import 'package:student_fit/constants/endpoints.dart';
-import 'package:student_fit/screens/home/home_widgets/app_bar.dart';
+import 'package:StudentFit/commons/colors.dart';
+import 'package:StudentFit/constants/endpoints.dart';
+import 'package:StudentFit/screens/home/home_widgets/app_bar.dart';
 
 class ForgetPasswordPage extends StatefulWidget {
   const ForgetPasswordPage({Key? key}) : super(key: key);
@@ -19,7 +19,8 @@ class _ForgetPasswordPage extends State<ForgetPasswordPage> {
   EmailOTP myauth = EmailOTP();
 
   Future<bool> isEmailExists(String email) async {
-    final response = await http.get(Uri.parse('$apiEndpointIsEmailExists?email=$email'));
+    final response =
+        await http.get(Uri.parse('$apiEndpointIsEmailExists?email=$email'));
     print('Response Status Code: ${response.statusCode}');
     print('Response Body: ${response.body}');
 
@@ -88,7 +89,8 @@ class _ForgetPasswordPage extends State<ForgetPasswordPage> {
                           ),
                           suffixIcon: IconButton(
                             onPressed: () async {
-                              bool emailExists = await isEmailExists(email.text);
+                              bool emailExists =
+                                  await isEmailExists(email.text);
 
                               if (emailExists) {
                                 myauth.setConfig(
@@ -136,7 +138,8 @@ class _ForgetPasswordPage extends State<ForgetPasswordPage> {
                           ),
                           hintText: "Email Address",
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(15.0)),
                           ),
                         ),
                       ),

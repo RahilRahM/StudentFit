@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:student_fit/commons/colors.dart';
+import 'package:StudentFit/commons/colors.dart';
 import '../../screens/home/home_widgets/app_bar.dart';
 import '../../screens/home/home_widgets/side_bar.dart';
-import 'package:student_fit/screens/profile/index.dart';
+import 'package:StudentFit/screens/profile/index.dart';
 
 class NotificationsPage extends StatefulWidget {
   @override

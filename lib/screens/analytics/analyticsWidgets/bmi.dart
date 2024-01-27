@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:student_fit/commons/colors.dart';
-import 'package:student_fit/main.dart';
+import 'package:StudentFit/commons/colors.dart';
+import 'package:StudentFit/main.dart';
 import '../../../utils/infoAuth.dart';
 
 class BMICalculatorWidget extends StatefulWidget {
-  const BMICalculatorWidget({Key? key}) : super(key: key);
+  final Function(String) onTimeframeChanged;
+  const BMICalculatorWidget({Key? key, required this.onTimeframeChanged})
+      : super(key: key);
 
   @override
   _BMICalculatorWidgetState createState() => _BMICalculatorWidgetState();
@@ -25,8 +27,8 @@ class _BMICalculatorWidgetState extends State<BMICalculatorWidget> {
     String? userInfoString = prefs?.getString('user_info');
     if (userInfoString != null) {
       Map<String, dynamic> userInfo = jsonDecode(userInfoString);
-      _height = userInfo['height'] ?? 170; 
-      _weight = userInfo['weight'] ?? 70; 
+      _height = userInfo['height'] ?? 170;
+      _weight = userInfo['weight'] ?? 70;
     } else {
       _height = 170; // Default height
       _weight = 70; // Default weight
@@ -113,19 +115,27 @@ class _BMICalculatorWidgetState extends State<BMICalculatorWidget> {
                   ),
                 ),
                 child: DropdownButton<String>(
-                  value: "  this week",
-                  onChanged: (value) {},
-                  items: ["  this week", "  last week", "  this month"]
-                      .map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Text(value),
-                      ),
-                    );
-                  }).toList(),
-                ),
+      value: "this week",
+      icon: const Icon(Icons.arrow_downward),
+      elevation: 16,
+      style: const TextStyle(color: Colors.grey), // Change to grey
+      underline: Container(
+        height: 2,
+        color: Colors.grey, // Change underline to grey
+      ),
+      onChanged: (String? newValue) {
+        if (newValue != null) {
+          widget.onTimeframeChanged(newValue);
+        }
+      },
+      items: <String>['this week', 'this month', 'this year']
+          .map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value, style: TextStyle(color: Colors.black)), // Text color to black
+        );
+      }).toList(),
+    ),
               ),
             ],
           ),
@@ -328,86 +338,92 @@ class _BMICalculatorWidgetState extends State<BMICalculatorWidget> {
       ),
     );
   }
-Future<void> _showInputDialog(BuildContext context, String title) async {
-  TextEditingController controller = TextEditingController();
-  String inputLabel = title == "Height" ? "Height (cm)" : "Weight (Kg)";
-  bool showError = false;
 
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(title == "Height" ? "Edit $title" : "Add New $title"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: inputLabel,
-                errorText: showError ? 'Invalid $title' : null,
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: showError ? Colors.red : AppColors.primaryColor),
+  Future<void> _showInputDialog(BuildContext context, String title) async {
+    TextEditingController controller = TextEditingController();
+    String inputLabel = title == "Height" ? "Height (cm)" : "Weight (Kg)";
+    bool showError = false;
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title == "Height" ? "Edit $title" : "Add New $title"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: inputLabel,
+                  errorText: showError ? 'Invalid $title' : null,
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                        color: showError ? Colors.red : AppColors.primaryColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                        color: showError ? Colors.red : Color(0xFFC9C9C9)),
+                  ),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: showError ? Colors.red : Color(0xFFC9C9C9)),
-                ),
+                onChanged: (value) {
+                  setState(() {
+                    showError = false;
+                  });
+                },
               ),
-              onChanged: (value) {
-                setState(() {
-                  showError = false;
-                });
-              },
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel',
-                      style: TextStyle(color: AppColors.primaryColor)),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    String inputText = controller.text;
-                    if (inputText.isNotEmpty && isNumeric(inputText)) {
-                      int inputValue = int.parse(inputText);
-                      if (title == 'Height' && inputValue > 50 && inputValue < 250) {
-                        await InfoAuth.updateHeightRecord(inputValue);
-                        if (mounted) {
-                          setState(() => _height = inputValue);
-                          Navigator.pop(context);
-                        }
-                      } else if (title == 'Weight' && inputValue > 20 && inputValue < 300) {
-                        // Save weight record
-                        await InfoAuth.saveWeightRecord(inputValue);
-                        if (mounted) {
-                          setState(() => _weight = inputValue);
-                          Navigator.pop(context);
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel',
+                        style: TextStyle(color: AppColors.primaryColor)),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      String inputText = controller.text;
+                      if (inputText.isNotEmpty && isNumeric(inputText)) {
+                        int inputValue = int.parse(inputText);
+                        if (title == 'Height' &&
+                            inputValue > 50 &&
+                            inputValue < 250) {
+                          await InfoAuth.updateHeightRecord(inputValue);
+                          if (mounted) {
+                            setState(() => _height = inputValue);
+                            Navigator.pop(context);
+                          }
+                        } else if (title == 'Weight' &&
+                            inputValue > 20 &&
+                            inputValue < 300) {
+                          // Save weight record
+                          await InfoAuth.saveWeightRecord(inputValue);
+                          if (mounted) {
+                            setState(() => _weight = inputValue);
+                            Navigator.pop(context);
+                          }
+                        } else {
+                          setState(() => showError = true);
                         }
                       } else {
                         setState(() => showError = true);
                       }
-                    } else {
-                      setState(() => showError = true);
-                    }
-                  },
-                  child: const Text('OK',
-                      style: TextStyle(color: AppColors.primaryColor)),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    },
-  );
+                    },
+                    child: const Text('OK',
+                        style: TextStyle(color: AppColors.primaryColor)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
-}
+
 bool isNumeric(String value) {
   return double.tryParse(value) != null;
 }

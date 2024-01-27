@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../home/home_widgets/app_bar.dart';
 import '../home/home_widgets/side_bar.dart';
 import 'schedule_widgets/addEventForm.dart';
-import 'package:student_fit/commons/colors.dart';
+import 'package:StudentFit/commons/colors.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -125,7 +125,6 @@ class _ScheduleState extends State<Schedule>
     }
   }
 
-
   void _onEventTap(CalendarEventData<Event> event) {
     showModalBottomSheet(
       context: context,
@@ -188,15 +187,19 @@ class _ScheduleState extends State<Schedule>
                       onPressed: () {
                         // TODO: Implement edit functionality
                       },
-                      icon: Icon(Icons.edit, color: Theme.of(context).primaryColor),
-                      label: Text('Edit', style: TextStyle(color: Theme.of(context).primaryColor)),
+                      icon: Icon(Icons.edit,
+                          color: Theme.of(context).primaryColor),
+                      label: Text('Edit',
+                          style:
+                              TextStyle(color: Theme.of(context).primaryColor)),
                     ),
                     TextButton.icon(
                       onPressed: () {
                         // TODO: Implement delete functionality
                       },
                       icon: Icon(Icons.delete, color: Colors.red),
-                      label: Text('Delete', style: TextStyle(color: Colors.red)),
+                      label:
+                          Text('Delete', style: TextStyle(color: Colors.red)),
                     ),
                   ],
                 ),
@@ -208,13 +211,8 @@ class _ScheduleState extends State<Schedule>
     );
   }
 
-
-
-
-
 // The EventEditingPage should be a new screen where users can edit event details
 // After editing, the page should return the edited event
-
 
   @override
   void initState() {
@@ -231,7 +229,8 @@ class _ScheduleState extends State<Schedule>
         alignment: Alignment.topCenter,
         children: [
           WeekView(
-            controller: CalendarControllerProvider.of<Event>(context).controller,
+            controller:
+                CalendarControllerProvider.of<Event>(context).controller,
             showLiveTimeLineInAllDays: true,
             startDay: WeekDays.sunday,
             headerStyle: const HeaderStyle(
@@ -266,7 +265,7 @@ class _ScheduleState extends State<Schedule>
               Color otherDayColor = Colors.transparent;
               String dayAndDate = DateFormat('E dd').format(dayIndex);
               String day = dayAndDate.substring(0, 1);
-              
+
               String daynumber = dayAndDate.substring(3);
               return WeekDayTile(
                 dayIndex: dayOfWeek,
@@ -282,7 +281,7 @@ class _ScheduleState extends State<Schedule>
             eventTileBuilder: (context, events, bounds, start, end) {
               if (events.isNotEmpty) {
                 CalendarEventData<Event> event = events.first;
-            
+
                 return GestureDetector(
                   onTap: () => _onEventTap(event),
                   child: Container(
@@ -300,10 +299,9 @@ class _ScheduleState extends State<Schedule>
                   ),
                 );
               }
-              return Container();  // Return an empty container for empty 'events' list
-            },                                    
+              return Container(); // Return an empty container for empty 'events' list
+            },
           ),
-          
           Positioned(
             bottom: 16.0,
             right: 16.0,
@@ -324,7 +322,7 @@ class _ScheduleState extends State<Schedule>
                   },
                 );
               },
-             child: const Icon(Icons.add),
+              child: const Icon(Icons.add),
             ),
           ),
         ],

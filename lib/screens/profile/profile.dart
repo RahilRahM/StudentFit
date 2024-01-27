@@ -1,11 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+
 import '../premium/subscription.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:student_fit/commons/colors.dart';
+import 'package:StudentFit/commons/colors.dart';
 import '../../screens/home/home_widgets/app_bar.dart';
 import '../../screens/home/home_widgets/side_bar.dart';
-import 'package:student_fit/screens/profile/index.dart';
+import 'package:StudentFit/screens/profile/index.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -15,6 +19,27 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   File? _image;
   bool isClicked = false;
+  String? userName;
+  String? userEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userDataString = prefs.getString('user');
+
+    if (userDataString != null) {
+      Map<String, dynamic> userData = jsonDecode(userDataString);
+      setState(() {
+        userName = userData['user_name'];
+        userEmail = userData['user_email'];
+      });
+    }
+  }
 
   Future<void> _pickImage() async {
     final pickedFile =
@@ -24,6 +49,15 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         _image = File(pickedFile.path);
       });
+
+      // Save the selected image to cache
+      final appDirectory = await getTemporaryDirectory();
+      final cacheImagePath = '${appDirectory.path}/profile_image.jpg';
+      await _image!.copy(cacheImagePath);
+
+      // Save the image path to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pic', cacheImagePath);
     }
   }
 
@@ -68,8 +102,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
               ),
               const SizedBox(height: 16.0),
-              const Text(
-                'Lilia Amk',
+              Text(
+                userName ?? 'Default Name',
                 style: TextStyle(
                   color: Colors.black,
                   fontFamily: 'Inter',
@@ -78,8 +112,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 8.0),
-              const Text(
-                'liliaamk@example.com',
+              Text(
+                userEmail ?? 'example@example.com',
                 style: TextStyle(
                   color: Color(0xFF71839B),
                   fontFamily: 'Inter',
@@ -262,9 +296,9 @@ Widget buildDrawerItem(BuildContext context, String title, IconData icon,
         title: buildDrawerItemText(title, icon, color, fontSize),
       ),
       const Padding(
-        padding: EdgeInsets.only(left: 60.0), // Adjust the left padding
+        padding: EdgeInsets.only(left: 60.0),
         child: Divider(
-          color: AppColors.greyColorHome, // Adjust the color as needed
+          color: AppColors.greyColorHome,
           height: 1,
         ),
       ),

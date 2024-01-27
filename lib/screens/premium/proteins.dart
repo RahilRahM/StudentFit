@@ -2,8 +2,8 @@ import '../../commons/colors.dart';
 import 'package:flutter/material.dart';
 import '../home/home_widgets/app_bar.dart';
 import '../home/home_widgets/side_bar.dart';
-import 'package:student_fit/screens/premium/menu.dart';
-import 'package:student_fit/screens/premium/prem_commons.dart';
+import 'package:StudentFit/screens/premium/menu.dart';
+import 'package:StudentFit/screens/premium/prem_commons.dart';
 
 class ProteinsPage extends StatefulWidget {
   @override

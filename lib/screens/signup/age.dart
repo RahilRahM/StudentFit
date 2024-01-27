@@ -2,7 +2,7 @@ import 'style.dart';
 import '../../commons/colors.dart';
 import 'package:flutter/material.dart';
 import '../../utils/userAuthentication.dart';
-import 'package:student_fit/screens/signup/height.dart';
+import 'package:StudentFit/screens/signup/height.dart';
 
 class AgePage extends StatefulWidget {
   final int userId;

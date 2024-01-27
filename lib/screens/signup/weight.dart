@@ -2,7 +2,7 @@ import 'style.dart';
 import '../../commons/colors.dart';
 import 'package:flutter/material.dart';
 import '../../utils/userAuthentication.dart';
-import 'package:student_fit/screens/home/homepage.dart';
+import 'package:StudentFit/screens/home/homepage.dart';
 
 class WeightPage extends StatefulWidget {
   final int userId;
@@ -23,7 +23,8 @@ class _WeightPageState extends State<WeightPage> {
   }
 
   void actionHandleWeightUpdate(BuildContext context) async {
-    String result = await UserAuthentication.insertWeight(widget.userId, weight);
+    String result =
+        await UserAuthentication.insertWeight(widget.userId, weight);
 
     if (result == 'success') {
       print('Weight added successfully');
@@ -78,7 +79,9 @@ class _WeightPageState extends State<WeightPage> {
             Container(
               height: screenHeight * 0.5,
               child: Center(
-                child: WeightPicker(onWeightChanged: updateWeight,),
+                child: WeightPicker(
+                  onWeightChanged: updateWeight,
+                ),
               ),
             ),
 
@@ -128,8 +131,8 @@ class _WeightPickerState extends State<WeightPicker> {
 
   // Controller for the PageView
   PageController pageController =
-    PageController(viewportFraction: 0.2, initialPage: 30);
-  
+      PageController(viewportFraction: 0.2, initialPage: 30);
+
   @override
   void initState() {
     super.initState();

@@ -1,4 +1,4 @@
-# student_fit
+# StudentFit
 
 A new Flutter project.
 

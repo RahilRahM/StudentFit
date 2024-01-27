@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:email_otp/email_otp.dart';
-import 'package:student_fit/screens/login/changePassword.dart';
-import 'package:student_fit/screens/home/home_widgets/app_bar.dart';
-import 'package:student_fit/screens/welcomePages/widgets/widgets.dart';
+import 'package:StudentFit/screens/login/changePassword.dart';
+import 'package:StudentFit/screens/home/home_widgets/app_bar.dart';
+import 'package:StudentFit/screens/welcomePages/widgets/widgets.dart';
 
 class Otp extends StatelessWidget {
   const Otp({
@@ -44,7 +44,8 @@ class Otp extends StatelessWidget {
 }
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({Key? key, required this.myauth, required this.userEmail}) : super(key: key);
+  const OtpScreen({Key? key, required this.myauth, required this.userEmail})
+      : super(key: key);
   final EmailOTP myauth;
   final String userEmail;
 
@@ -112,7 +113,6 @@ class _OtpScreenState extends State<OtpScreen> {
             "Enter the 4-digit confirmation code sent to your email",
             style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
-
           const SizedBox(
             height: 40,
           ),
@@ -130,7 +130,8 @@ class _OtpScreenState extends State<OtpScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChangePasswordPage(userEmail: widget.userEmail),
+                    builder: (context) =>
+                        ChangePasswordPage(userEmail: widget.userEmail),
                   ),
                 );
               } else {

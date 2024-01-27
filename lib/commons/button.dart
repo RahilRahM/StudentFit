@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:student_fit/commons/colors.dart';
-import 'package:student_fit/screens/welcomePages/widgets/app_text_styles.dart';
+import 'package:StudentFit/commons/colors.dart';
+import 'package:StudentFit/screens/welcomePages/widgets/app_text_styles.dart';
 
 class CustomElevatedButton2 extends StatelessWidget {
   final String buttonText;
@@ -8,7 +8,8 @@ class CustomElevatedButton2 extends StatelessWidget {
   final double width;
   final double height;
 
-  const CustomElevatedButton2({super.key, 
+  const CustomElevatedButton2({
+    super.key,
     required this.buttonText,
     required this.onPressed,
     this.width = 250, // default width

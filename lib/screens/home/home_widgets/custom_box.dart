@@ -2,8 +2,7 @@ import '../../../commons/colors.dart';
 import 'package:flutter/material.dart';
 import '../../tracker/water_details.dart';
 import '../../tracker/calories_details.dart';
-import 'package:student_fit/screens/schedule/schedulePage.dart';
-
+import 'package:StudentFit/screens/schedule/schedulePage.dart';
 
 class CustomBox extends StatelessWidget {
   @override
@@ -74,14 +73,18 @@ class _SubBoxState extends State<SubBox> {
             context, MaterialPageRoute(builder: (context) => WaterPage()));
         break;
       case 'schedule':
-      Navigator.push(context, MaterialPageRoute(builder: (context) => SchedulePage()));
-      break;
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => SchedulePage()));
+        break;
       case 'calories':
         Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => CaloriesDetailPage(
-                      recipeData: {'path': 'assets/images/snack1.jpeg','title': 'Healthy Salad',},
+                      recipeData: {
+                        'path': 'assets/images/snack1.jpeg',
+                        'title': 'Healthy Salad',
+                      },
                     )));
         break;
       default:
@@ -140,10 +143,12 @@ class _SubBoxState extends State<SubBox> {
             SizedBox(height: 0.01 * MediaQuery.of(context).size.width),
             Icon(
               widget.icon,
-              size: 0.07 * MediaQuery.of(context).size.width, // Adjust the size factor as needed
+              size: 0.07 *
+                  MediaQuery.of(context)
+                      .size
+                      .width, // Adjust the size factor as needed
               color: AppColors.primaryColor,
             ),
-            
             SizedBox(height: 0.05 * MediaQuery.of(context).size.width),
             Text(
               widget.label,

@@ -14,12 +14,10 @@ import '../analytics/analyticsPage.dart';
 import 'home_widgets/today_for_section.dart';
 import 'home_widgets/looking_for_section.dart';
 import 'home_widgets/daily_advice_section.dart';
-import 'package:student_fit/screens/login/login.dart';
-import 'package:student_fit/screens/schedule/schedulePage.dart';
-import 'package:student_fit/screens/schedule/calendarPage.dart';
-import 'package:student_fit/screens/welcomePages/widgets/app_text_styles.dart';
-
-
+import 'package:StudentFit/screens/login/login.dart';
+import 'package:StudentFit/screens/schedule/schedulePage.dart';
+import 'package:StudentFit/screens/schedule/calendarPage.dart';
+import 'package:StudentFit/screens/welcomePages/widgets/app_text_styles.dart';
 
 class HomePage extends StatelessWidget {
   final String appBarTitle;
@@ -43,12 +41,10 @@ class HomePage extends StatelessWidget {
         '/calendar': (context) => const CalendarPage(),
         '/schedule': (context) => const SchedulePage(),
         '/analytics': (context) => const AnalyticsPage(),
-   
       },
       home: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return Scaffold(
-            
             appBar: CustomAppBar2(
               appBarTitle: appBarTitle,
               actions: [],

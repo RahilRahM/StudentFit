@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../home/home_widgets/app_bar.dart';
-import 'package:student_fit/commons/index.dart';
+import 'package:StudentFit/commons/index.dart';
 
 class MenuPage extends StatelessWidget {
   final Map<String, String> recipeData;
