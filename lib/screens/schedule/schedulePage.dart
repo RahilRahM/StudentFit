@@ -8,6 +8,7 @@ import 'schedule_widgets/addEventForm.dart';
 import 'package:student_fit/commons/colors.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:student_fit/screens/schedule/schedule_widgets/editEventPage.dart';
 
 class EventWrapper {
   final CalendarEventData<Event> event;
@@ -115,6 +116,7 @@ class _ScheduleState extends State<Schedule>
       for (String jsonString in savedEvents) {
         final jsonData = jsonDecode(jsonString);
         if (jsonData != null && jsonData is Map<String, dynamic>) {
+          // ignore: unused_local_variable
           final event = jsonToEvent(jsonData);
         } else {
           print('Invalid or null JSON data encountered');
@@ -125,6 +127,7 @@ class _ScheduleState extends State<Schedule>
     }
   }
 
+  
   void _onEventTap(CalendarEventData<Event> event) {
     showModalBottomSheet(
       context: context,
@@ -149,7 +152,7 @@ class _ScheduleState extends State<Schedule>
                   children: [
                     CircleAvatar(
                       radius: 5.0,
-                      backgroundColor: event.color ?? Colors.blue,
+                  
                     ),
                     SizedBox(width: 18),
                     Expanded(
@@ -186,7 +189,7 @@ class _ScheduleState extends State<Schedule>
                     Icon(Icons.description, color: AppColors.primaryColor),
                     SizedBox(width: 10),
                     Text(
-                      event.description ?? 'No description provided',
+                      event.description,
                       style: TextStyle(color: Colors.grey[600], fontSize: 16),
                     ),
                   ],
@@ -199,7 +202,17 @@ class _ScheduleState extends State<Schedule>
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildActionButton(Icons.edit, 'Edit', AppColors.primaryColor, () {
-                      // TODO: Implement edit functionality
+                      // Implement edit functionality - Navigate to EditEventPage
+                      Navigator.pop(context); // Close the bottom sheet first
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditEventPage(
+                            eventController: widget.eventController,// Pass the event controller
+                            // Pass the event you want to edit
+                          ),
+                        ),
+                      );
                     }),
                     _buildActionButton(Icons.delete, 'Delete', Colors.red, () {
                       // TODO: Implement delete functionality
@@ -234,9 +247,6 @@ class _ScheduleState extends State<Schedule>
       ],
     );
   }
-  
-
-  
   
 
   
@@ -315,7 +325,7 @@ class _ScheduleState extends State<Schedule>
                     height: bounds.height,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: event.color ?? Colors.blue,
+                      color: event.color ,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(

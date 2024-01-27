@@ -1,11 +1,11 @@
-
 import 'models/user.dart';
 import 'package:dio/dio.dart';
 import 'utils/userAuthentication.dart';
 import 'package:flutter/material.dart';
 import 'screens/welcomePages/welcome.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:student_fit/screens/home/homepage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 final dio = Dio();
 SharedPreferences? prefs;

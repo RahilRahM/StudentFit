@@ -4,7 +4,22 @@ import 'recipe_detail_page.dart';
 import 'package:flutter/material.dart';
 import '../home/home_widgets/app_bar.dart';
 import '../home/home_widgets/side_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+
+class FavoriteRecipes {
+  static Future<List<String>> getFavoriteRecipes() async {
+    
+    final prefs = await SharedPreferences.getInstance();
+    final favoriteRecipes = prefs.getStringList('favoriteRecipes') ?? [];
+    return favoriteRecipes;
+  }
+
+  static Future<void> saveFavoriteRecipes(List<String> favoriteRecipes) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('favoriteRecipes', favoriteRecipes);
+  }
+}
 class BreakfastPage extends StatefulWidget {
   @override
   _BreakfastPageState createState() => _BreakfastPageState();
@@ -14,55 +29,304 @@ class _BreakfastPageState extends State<BreakfastPage> {
 
   // List of image data (path and title)
   final List<Map<String, String>> imageData = [
-    {'path': 'assets/images/recipe1.jpeg', 'title': 'Banana Berry Acai Bowl'},
-    {'path': 'assets/images/recipe2.jpeg', 'title': 'Smoothie Bowl'},
+    {
+      'path': 'assets/images/recipe1.jpeg',
+      'title': 'Banana Berry Acai Bowl',
+      'ingredients': '''
+          Banana
+          Mixed Berries
+          Acai Puree
+          Greek Yogurt 
+          Honey
+          ''',
+      'recipe': '''
+        1. Blend all ingredients until smooth.
+        2. Pour into a bowl.
+        3. Add toppings of your choice.
+      ''',
+    },
+    {
+      'path': 'assets/images/recipe2.jpeg',
+      'title': 'Smoothie Bowl',
+      'ingredients': '''
+        Your choice of fruits
+        Greek Yogurt
+        Honey
+        Granola
+          ''',
+      'recipe': '''
+        1. Blend fruits, Greek Yogurt, and Honey until smooth.
+        2. Pour into a bowl.
+        3. Sprinkle with granola.
+      ''',
+    },
     {
       'path': 'assets/images/recipe3.jpeg',
-      'title': 'Avocado toast with tomato'
+      'title': 'Avocado toast with tomato',
+      'ingredients': '''
+      Avocado
+       Bread 
+       Tomato
+       Salt
+       Pepper
+      ''',
+      'recipe': '''
+        1. Toast the bread.
+        2. Mash avocado and spread on the toast.
+        3. Add sliced tomato.
+        4. Season with salt and pepper.
+      ''',
     },
     {
       'path': 'assets/images/recipe4.jpeg',
-      'title': 'Cilantro Lime Avocado Toast'
+      'title': 'Cilantro Lime Avocado Toast',
+      'ingredients': '''
+       Avocado
+        Bread
+         Lime 
+         juice
+          Cilantro
+           Salt 
+           Pepper
+      ''',
+      'recipe': '''
+        1. Toast the bread.
+        2. Mash avocado and spread on the toast.
+        3. Squeeze lime juice over the avocado.
+        4. Sprinkle with chopped cilantro.
+        5. Season with salt and pepper.
+      ''',
     },
-    {'path': 'assets/images/recipe5.jpeg', 'title': 'Fruit'},
-    {'path': 'assets/images/recipe6.jpeg', 'title': 'Kimchi'},
-    {'path': 'assets/images/recipe7.jpeg', 'title': 'Fruits'},
-    {'path': 'assets/images/recipe3.jpeg', 'title': 'Yogurt Parfait'},
-    {'path': 'assets/images/recipe9.jpeg', 'title': 'Egg Breakfast Bowl'},
-    {'path': 'assets/images/recipe1.jpeg', 'title': 'Fruits'},
-    {'path': 'assets/images/recipe1.jpeg', 'title': 'Banana Berry Acai Bowl'},
-    {'path': 'assets/images/recipe2.jpeg', 'title': 'Smoothie Bowl'},
+    {
+      'path': 'assets/images/recipe5.jpeg',
+      'title': 'Chocolate Chip Banana Pancakes',
+      'ingredients': '''
+Banana 
+Pancake
+ mix 
+ Chocolate 
+ chips 
+ Milk ''',
+      'recipe': '''
+        1. Mash banana and mix with pancake mix and milk.
+        2. Stir in chocolate chips.
+        3. Cook pancakes on a hot griddle.
+      ''',
+    },
+    {
+      'path': 'assets/images/recipe6.jpeg',
+      'title': 'Fruit Salad',
+      'ingredients': '''
+       Assorted
+        fruits 
+        (e.g., apples, oranges, grapes)
+        ''',
+      'recipe': '''
+        1. Wash and chop fruits into bite-sized pieces.
+        2. Combine in a bowl.
+        3. Serve chilled.
+      ''',
+    },
+    {
+      'path': 'assets/images/recipe7.jpeg',
+      'title': 'Egg Breakfast Bowl',
+      'ingredients': '''
+Eggs
+Spinach 
+Tomato
+ Cheese 
+ Salt 
+ Pepper
+''',
+      'recipe': '''
+        1. Scramble eggs and cook with spinach, tomatoes, and cheese.
+        2. Season with salt and pepper.
+        3. Serve hot in a bowl.
+      ''',
+    },
+    {
+      'path': 'assets/images/recipe9.jpeg',
+      'title': 'Yogurt Parfait',
+      'ingredients': '''
+      Greek yogurt
+       Granola
+        Mixed berries
+         Honey
+      ''',
+      'recipe': '''
+        1. Layer Greek yogurt, granola, and mixed berries in a glass.
+        2. Drizzle with honey.
+        3. Repeat the layers.
+      ''',
+    },
+    {
+      'path': 'assets/images/recipe1.jpeg',
+      'title': 'Banana Berry Acai Bowl',
+      'ingredients': '''
+          Banana
+          Mixed Berries
+          Acai Puree
+          Greek Yogurt 
+          Honey
+          ''',
+      'recipe': '''
+        1. Blend all ingredients until smooth.
+        2. Pour into a bowl.
+        3. Add toppings of your choice.
+      ''',
+    },
+    {
+      'path': 'assets/images/recipe2.jpeg',
+      'title': 'Smoothie Bowl',
+      'ingredients': '''
+        Your choice of fruits
+        Greek Yogurt
+        Honey
+        Granola
+          ''',
+      'recipe': '''
+        1. Blend fruits, Greek Yogurt, and Honey until smooth.
+        2. Pour into a bowl.
+        3. Sprinkle with granola.
+      ''',
+    },
     {
       'path': 'assets/images/recipe3.jpeg',
-      'title': 'Avocado toast with tomato'
+      'title': 'Avocado toast with tomato',
+      'ingredients': '''
+      Avocado
+       Bread 
+       Tomato
+       Salt
+       Pepper
+      ''',
+      'recipe': '''
+        1. Toast the bread.
+        2. Mash avocado and spread on the toast.
+        3. Add sliced tomato.
+        4. Season with salt and pepper.
+      ''',
     },
     {
       'path': 'assets/images/recipe4.jpeg',
-      'title': 'Cilantro Lime Avocado Toast'
+      'title': 'Cilantro Lime Avocado Toast',
+      'ingredients': '''
+       Avocado
+        Bread
+         Lime 
+         juice
+          Cilantro
+           Salt 
+           Pepper
+      ''',
+      'recipe': '''
+        1. Toast the bread.
+        2. Mash avocado and spread on the toast.
+        3. Squeeze lime juice over the avocado.
+        4. Sprinkle with chopped cilantro.
+        5. Season with salt and pepper.
+      ''',
     },
-    {'path': 'assets/images/recipe5.jpeg', 'title': 'Fruit'},
-    {'path': 'assets/images/recipe6.jpeg', 'title': 'Kimchi'},
-    {'path': 'assets/images/recipe7.jpeg', 'title': 'Fruits'},
-    {'path': 'assets/images/recipe3.jpeg', 'title': 'Yogurt Parfait'},
-    {'path': 'assets/images/recipe9.jpeg', 'title': 'Egg Breakfast Bowl'},
-    {'path': 'assets/images/recipe1.jpeg', 'title': 'Fruits'},
+    {
+      'path': 'assets/images/recipe5.jpeg',
+      'title': 'Chocolate Chip Banana Pancakes',
+      'ingredients': '''
+Banana 
+Pancake
+ mix 
+ Chocolate 
+ chips 
+ Milk ''',
+      'recipe': '''
+        1. Mash banana and mix with pancake mix and milk.
+        2. Stir in chocolate chips.
+        3. Cook pancakes on a hot griddle.
+      ''',
+    },
+    {
+      'path': 'assets/images/recipe6.jpeg',
+      'title': 'Fruit Salad',
+      'ingredients': '''
+       Assorted
+        fruits 
+        (e.g., apples, oranges, grapes)
+        ''',
+      'recipe': '''
+        1. Wash and chop fruits into bite-sized pieces.
+        2. Combine in a bowl.
+        3. Serve chilled.
+      ''',
+    },
+    {
+      'path': 'assets/images/recipe7.jpeg',
+      'title': 'Egg Breakfast Bowl',
+      'ingredients': '''
+Eggs
+Spinach 
+Tomato
+ Cheese 
+ Salt 
+ Pepper
+''',
+      'recipe': '''
+        1. Scramble eggs and cook with spinach, tomatoes, and cheese.
+        2. Season with salt and pepper.
+        3. Serve hot in a bowl.
+      ''',
+    },
+    {
+      'path': 'assets/images/recipe9.jpeg',
+      'title': 'Yogurt Parfait',
+      'ingredients': '''
+      Greek yogurt
+       Granola
+        Mixed berries
+         Honey
+      ''',
+      'recipe': '''
+        1. Layer Greek yogurt, granola, and mixed berries in a glass.
+        2. Drizzle with honey.
+        3. Repeat the layers.
+      ''',
+    },
   ];
-  
+
+  SharedPreferences? _prefs;
   //imageData.shuffle();
   @override
   void initState() {
     super.initState();
     filteredImageData = List.from(imageData);
+    _loadFavoriteImages();
   }
 
+  Future<void> _loadFavoriteImages() async {
+    _prefs = await SharedPreferences.getInstance();
+    final favoriteImagesList = _prefs?.getStringList('breakfastFavoriteImages') ?? [];
+    setState(() {
+      favoriteImages = favoriteImagesList;
+    });
+  }
   // List to store the favorite images
   List<String> favoriteImages = [];
+  List<String> favoriteRecipes = [];
+
+  Future<void> _loadFavoriteRecipes() async {
+    favoriteRecipes = await FavoriteRecipes.getFavoriteRecipes();
+    setState(() {
+      filteredImageData = List.from(imageData);
+    });
+  }
+
+  void _saveFavoriteRecipes() async {
+    await FavoriteRecipes.saveFavoriteRecipes(favoriteRecipes);
+  }
+
+
   List<Map<String, String>> filteredImageData = [];
   TextEditingController searchController = TextEditingController();
 
-
-  //fav functionality
-  void toggleFavorite(String imagePath) {
+  void toggleFavorite(String imagePath) async {
     setState(() {
       if (favoriteImages.contains(imagePath)) {
         favoriteImages.remove(imagePath);
@@ -70,7 +334,11 @@ class _BreakfastPageState extends State<BreakfastPage> {
         favoriteImages.add(imagePath);
       }
     });
+
+    // Save the updated list of favorite images to SharedPreferences
+    await _prefs?.setStringList('breakfastFavoriteImages', favoriteImages);
   }
+
 
   //search
   void updateSearch(String query) {
@@ -96,6 +364,7 @@ class _BreakfastPageState extends State<BreakfastPage> {
       ),
     );
   }
+
 
   //card images
   Widget buildCard(String imagePath, String title, bool isFavorite,
@@ -161,7 +430,6 @@ class _BreakfastPageState extends State<BreakfastPage> {
     );
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
