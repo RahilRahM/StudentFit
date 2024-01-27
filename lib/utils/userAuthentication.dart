@@ -331,7 +331,16 @@ class UserAuthentication {
                 userInfo['weight'] = data[0]['weight'];
                 prefs!.setString('user_info', jsonEncode(userInfo));
               }
-            }
+                // Update weight_records
+              String? weightRecordsString = prefs?.getString('weight_records');
+              List<dynamic> weightRecords = weightRecordsString != null ? jsonDecode(weightRecordsString) : [];
+              Map<String, dynamic> newRecord = {
+                'weight': weight,
+                'timestamp': DateTime.now().toIso8601String(),
+              };
+              weightRecords.add(newRecord);
+                prefs!.setString('weight_records', jsonEncode(weightRecords)); // Save updated weight_records
+              }
           }
 
           return 'success';

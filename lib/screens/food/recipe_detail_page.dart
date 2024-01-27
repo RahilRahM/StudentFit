@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:student_fit/screens/home/home_widgets/app_bar.dart';
+import 'package:StudentFit/screens/home/home_widgets/app_bar.dart';
 
 class RecipeDetailPage extends StatelessWidget {
   final Map<String, String> recipeData;
@@ -158,8 +158,6 @@ class RecipeDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-            
-           
             Container(
               width: 200,
               height: 39,
@@ -188,7 +186,6 @@ class RecipeDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-          
             SizedBox(
               width: 290,
               height: 250,

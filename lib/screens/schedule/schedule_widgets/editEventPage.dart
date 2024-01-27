@@ -2,11 +2,11 @@ import 'dart:convert';
 import './event.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:student_fit/commons/colors.dart';
+import 'package:StudentFit/commons/colors.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:student_fit/screens/schedule/schedulePage.dart';
-import 'package:student_fit/screens/schedule/schedule_widgets/addEventForm.dart';
+import 'package:StudentFit/screens/schedule/schedulePage.dart';
+import 'package:StudentFit/screens/schedule/schedule_widgets/addEventForm.dart';
 
 class EditEventPage extends StatefulWidget {
   final EventController<Event> eventController;
@@ -44,15 +44,15 @@ class _EditEventPage extends State<EditEventPage> {
     startDateController.text = DateFormat.yMd().format(widget.event.date);
     endDateController.text = DateFormat.yMd().format(widget.event.endDate);
     startTimeController.text = DateFormat('HH:mm').format(DateTime(
-        widget.event.date.year,
-        widget.event.date.month,
-        widget.event.date.day,
-       ));
+      widget.event.date.year,
+      widget.event.date.month,
+      widget.event.date.day,
+    ));
     endTimeController.text = DateFormat('HH:mm').format(DateTime(
-        widget.event.date.year,
-        widget.event.date.month,
-        widget.event.date.day,
-       ));
+      widget.event.date.year,
+      widget.event.date.month,
+      widget.event.date.day,
+    ));
   }
 
   Future<void> _updateEvent(
