@@ -12,7 +12,8 @@ class EditEventPage extends StatefulWidget {
   final EventController<Event> eventController;
   final CalendarEventData<Event> event;
 
-  const EditEventPage({Key? key, required this.eventController, required this.event})
+  const EditEventPage(
+      {Key? key, required this.eventController, required this.event})
       : super(key: key);
 
   @override
@@ -42,7 +43,16 @@ class _EditEventPage extends State<EditEventPage> {
     descController.text = widget.event.description;
     startDateController.text = DateFormat.yMd().format(widget.event.date);
     endDateController.text = DateFormat.yMd().format(widget.event.endDate);
-
+    startTimeController.text = DateFormat('HH:mm').format(DateTime(
+        widget.event.date.year,
+        widget.event.date.month,
+        widget.event.date.day,
+       ));
+    endTimeController.text = DateFormat('HH:mm').format(DateTime(
+        widget.event.date.year,
+        widget.event.date.month,
+        widget.event.date.day,
+       ));
   }
 
   Future<void> _updateEvent(
@@ -55,7 +65,8 @@ class _EditEventPage extends State<EditEventPage> {
     // Assuming you have a unique way to identify events, such as by title
     int eventIndex = savedEvents.indexWhere((jsonString) {
       final existingEvent = jsonToEvent(jsonDecode(jsonString));
-      return existingEvent.title == widget.event.title; // Use a unique identifier here
+      return existingEvent.title ==
+          widget.event.title; // Use a unique identifier here
     });
 
     if (eventIndex != -1) {
@@ -168,7 +179,6 @@ class _EditEventPage extends State<EditEventPage> {
           ),
         ),
       ),
-
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 40.0),
         child: Row(
@@ -178,6 +188,7 @@ class _EditEventPage extends State<EditEventPage> {
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
                   _formKey.currentState!.save();
+
                   DateTime startDateTime = DateTime(
                     startDate.year,
                     startDate.month,
@@ -185,7 +196,7 @@ class _EditEventPage extends State<EditEventPage> {
                     startTime.hour,
                     startTime.minute,
                   );
-            
+
                   DateTime endDateTime = DateTime(
                     endDate.year,
                     endDate.month,
@@ -193,7 +204,8 @@ class _EditEventPage extends State<EditEventPage> {
                     endTime.hour,
                     endTime.minute,
                   );
-                  CalendarEventData<Event> updatedEvent = CalendarEventData<Event>(
+                  CalendarEventData<Event> updatedEvent =
+                      CalendarEventData<Event>(
                     title: titleController.text,
                     event: Event(title: titleController.text, id: ''),
                     description: descController.text,
