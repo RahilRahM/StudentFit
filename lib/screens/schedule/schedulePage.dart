@@ -71,15 +71,8 @@ class ScheduleState extends State<SchedulePage> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-          appBar: CustomAppBar2(
-            appBarTitle: 'Schedule',
-            showFavoriteIcon: false,
-            leadingIcon: Icons.arrow_back_ios,
-            onLeadingPressed: () {
-              Navigator.pop(context);
-            },
-            actions: [],
-          ),
+          appBar: const CustomAppBar2(appBarTitle: "Schedule", actions: []),
+      
           body: Schedule(eventController: eventController),
           drawer: buildDrawer(context),
         ),
