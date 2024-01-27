@@ -71,7 +71,15 @@ class ScheduleState extends State<SchedulePage> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-          appBar: const CustomAppBar2(appBarTitle: "Schedule", actions: []),
+          appBar: CustomAppBar2(
+            appBarTitle: 'Schedule',
+            showFavoriteIcon: false,
+            leadingIcon: Icons.arrow_back_ios,
+            onLeadingPressed: () {
+              Navigator.pop(context);
+            },
+            actions: [],
+          ),
       
           body: Schedule(eventController: eventController),
           drawer: buildDrawer(context),
@@ -146,7 +154,7 @@ class _ScheduleState extends State<Schedule>
       ),
       builder: (BuildContext context) {
         return FractionallySizedBox(
-          heightFactor: 0.35,
+          heightFactor: 0.30,
           child: Container(
             padding: EdgeInsets.all(16.0),
             decoration: BoxDecoration(
@@ -177,7 +185,7 @@ class _ScheduleState extends State<Schedule>
                   ],
                 ),
 
-                SizedBox(height: 50),
+                SizedBox(height: 20),
 
                 // Date and time row
                 Row(
@@ -193,7 +201,7 @@ class _ScheduleState extends State<Schedule>
                   ],
                 ),
                 Divider(color: Colors.grey[300], thickness: 1, height: 20),
-                SizedBox(height: 30),
+
                 Row(
                   children: [
                     Icon(Icons.description, color: AppColors.primaryColor),
@@ -206,7 +214,7 @@ class _ScheduleState extends State<Schedule>
                 ),
 
                 Divider(color: Colors.grey[300], thickness: 1, height: 20),
-                SizedBox(height: 40),
+ 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
