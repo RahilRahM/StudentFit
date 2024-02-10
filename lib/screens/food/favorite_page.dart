@@ -1,6 +1,8 @@
-import 'commons.dart';
 import 'package:flutter/material.dart';
-import '../home/home_widgets/app_bar.dart';
+import 'package:StudentFit/screens/food/commons.dart';
+import 'package:StudentFit/screens/food/recipe_detail_page.dart';
+import 'package:StudentFit/screens/home/home_widgets/app_bar.dart';
+
 
 class FavoritePage extends StatelessWidget {
   final List<String> favoriteImages;
@@ -14,9 +16,6 @@ class FavoritePage extends StatelessWidget {
       appBar: CustomAppBar2(
         appBarTitle: 'Favorites',
         showFavoriteIcon: false,
-        onFavoritePressed: () {
-          // Handle favorite pressed
-        },
         leadingIcon: Icons.arrow_back_ios,
         onLeadingPressed: () {
           Navigator.pop(context);
@@ -28,7 +27,6 @@ class FavoritePage extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             double cardWidth = constraints.maxWidth / 2 - 10;
-
             return GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -39,13 +37,23 @@ class FavoritePage extends StatelessWidget {
               itemCount: favoriteImages.length,
               itemBuilder: (context, index) {
                 final favoriteImagePath = favoriteImages[index];
-
                 final imageDataForFavorite = imageData.firstWhere(
                   (data) => data['path'] == favoriteImagePath,
-                  orElse: () => {},
+                  orElse: () => <String, String>{},
                 );
 
-                return buildCardWithoutFavoriteIcon(imageDataForFavorite);
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            RecipeDetailPage(recipeData: imageDataForFavorite),
+                      ),
+                    );
+                  },
+                  child: buildCardWithoutFavoriteIcon(imageDataForFavorite),
+                );
               },
             );
           },

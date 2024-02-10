@@ -1,13 +1,14 @@
+import 'dart:convert';
 import 'commons.dart';
-import './breakfast.dart';
 import 'favorite_page.dart';
 import 'recipe_detail_page.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../home/home_widgets/app_bar.dart';
 import '../home/home_widgets/side_bar.dart';
+import 'package:StudentFit/screens/food/breakfast.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-
 
 class LunchPage extends StatefulWidget {
   @override
@@ -15,345 +16,48 @@ class LunchPage extends StatefulWidget {
 }
 
 class _LunchPageState extends State<LunchPage> {
-  // List of image data (path and title)
-  final List<Map<String, String>> imageData = [
-    {
-      'path': 'assets/images/lunch1.png',
-      'title': 'Bean Salad',
-      'ingredients': '''
-        Canned Beans
-        Cherry Tomatoes
-        Red Onion
-        Olive Oil
-        Balsamic Vinegar
-      ''',
-      'recipe': '''
-        1. Mix canned beans, cherry tomatoes, and red onion in a bowl.
-        2. Drizzle with olive oil and balsamic vinegar.
-        3. Toss well and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch2.jpeg',
-      'title': 'Mediterranean Tuna Salad',
-      'ingredients': '''
-        Tuna
-        Cucumber
-        Cherry Tomatoes
-        Red Onion
-        Olive Oil
-      ''',
-      'recipe': '''
-        1. Combine tuna, cucumber, cherry tomatoes, and red onion in a bowl.
-        2. Drizzle with olive oil and toss to combine.
-        3. Serve as a refreshing salad.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch3.png',
-      'title': 'Ramen',
-      'ingredients': '''
-        Ramen Noodles
-        Broth
-        Vegetables (e.g., Bok Choy, Mushrooms)
-        Soy Sauce
-      ''',
-      'recipe': '''
-        1. Cook ramen noodles according to package instructions.
-        2. Heat broth and add vegetables.
-        3. Add cooked ramen noodles and soy sauce.
-        4. Serve hot.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch4.jpeg',
-      'title': 'Cumin-Roasted Carrot & Cauliflower',
-      'ingredients': '''
-        Carrots
-        Cauliflower
-        Cumin
-        Olive Oil
-        Salt and Pepper
-      ''',
-      'recipe': '''
-        1. Toss carrots and cauliflower with cumin, olive oil, salt, and pepper.
-        2. Roast in the oven until tender.
-        3. Serve as a side dish.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch5.jpeg',
-      'title': 'Amatriciana',
-      'ingredients': '''
-        Pasta
-        Pancetta or Guanciale
-        Tomatoes
-        Onion
-        Pecorino Cheese
-      ''',
-      'recipe': '''
-        1. Cook pasta until al dente.
-        2. Sauté pancetta or guanciale and onion in a pan.
-        3. Add tomatoes and simmer.
-        4. Toss pasta with the sauce and top with Pecorino cheese.
-      ''',
-    },
-    {
-      'path': 'assets/images/easybutterchicken.jpg',
-      'title': 'Easy Butter Chicken',
-      'ingredients': '''
-        Chicken
-        Butter
-        Tomatoes
-        Cream
-        Spices
-      ''',
-      'recipe': '''
-        1. Sauté chicken in butter, add tomatoes, cream, and spices.
-        2. Simmer until the sauce thickens and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/spaghettibolognese.jpeg',
-      'title': 'Spaghetti Bolognese',
-      'ingredients': '''
-        Ground Beef
-        Tomatoes
-        Onion
-        Spaghetti
-        Parmesan Cheese
-      ''',
-      'recipe': '''
-        1. Brown ground beef and onion, add tomatoes, and simmer.
-        2. Serve over cooked spaghetti with Parmesan cheese.
-      ''',
-    },
-    {
-      'path': 'assets/images/classicshepherdspie.jpg',
-      'title': 'Classic Shepherd Pie',
-      'ingredients': '''
-        Ground Beef
-        Vegetables
-        Mashed Potatoes
-        Gravy
-      ''',
-      'recipe': '''
-        1. Brown ground beef, add vegetables, and top with mashed potatoes.
-        2. Bake until golden and serve with gravy.
-      ''',
-    },
-    {
-      'path': 'assets/images/zucchinifritters.jpeg',
-      'title': 'Zucchini Fritters',
-      'ingredients': '''
-        Zucchini
-        Eggs
-        Flour
-        Feta Cheese
-        Dill
-      ''',
-      'recipe': '''
-        1. Grate zucchini, mix with eggs, flour, feta cheese, and dill.
-        2. Fry until golden brown and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch6.jpeg',
-      'title': 'Sautéed Shrimp',
-      'ingredients': '''
-        Shrimp
-        Garlic
-        Butter
-        Lemon Juice
-        Parsley
-      ''',
-      'recipe': '''
-        1. Sauté shrimp and garlic in butter.
-        2. Add lemon juice and parsley.
-        3. Cook until shrimp turn pink.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch7.jpeg',
-      'title': 'Healthy Pasta',
-      'ingredients': '''
-        Whole Wheat Pasta
-        Broccoli
-        Cherry Tomatoes
-        Olive Oil
-        Garlic
-      ''',
-      'recipe': '''
-        1. Cook whole wheat pasta.
-        2. Sauté broccoli, cherry tomatoes, and garlic in olive oil.
-        3. Toss with cooked pasta.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch8.png',
-      'title': 'Spaghetti',
-      'ingredients': '''
-        Spaghetti
-        Tomato Sauce
-        Ground Beef (optional)
-        Parmesan Cheese
-      ''',
-      'recipe': '''
-        1. Cook spaghetti.
-        2. If desired, brown ground beef and mix with tomato sauce.
-        3. Serve spaghetti with sauce and Parmesan cheese.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch1.png',
-      'title': 'Bean Salad',
-      'ingredients': '''
-        Canned Beans
-        Cherry Tomatoes
-        Red Onion
-        Olive Oil
-        Balsamic Vinegar
-      ''',
-      'recipe': '''
-        1. Mix canned beans, cherry tomatoes, and red onion in a bowl.
-        2. Drizzle with olive oil and balsamic vinegar.
-        3. Toss well and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch2.jpeg',
-      'title': 'Mediterranean Tuna Salad',
-      'ingredients': '''
-        Tuna
-        Cucumber
-        Cherry Tomatoes
-        Red Onion
-        Olive Oil
-      ''',
-      'recipe': '''
-        1. Combine tuna, cucumber, cherry tomatoes, and red onion in a bowl.
-        2. Drizzle with olive oil and toss to combine.
-        3. Serve as a refreshing salad.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch3.png',
-      'title': 'Ramen',
-      'ingredients': '''
-        Ramen Noodles
-        Broth
-        Vegetables (e.g., Bok Choy, Mushrooms)
-        Soy Sauce
-      ''',
-      'recipe': '''
-        1. Cook ramen noodles according to package instructions.
-        2. Heat broth and add vegetables.
-        3. Add cooked ramen noodles and soy sauce.
-        4. Serve hot.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch4.jpeg',
-      'title': 'Cumin-Roasted Carrot & Cauliflower',
-      'ingredients': '''
-        Carrots
-        Cauliflower
-        Cumin
-        Olive Oil
-        Salt and Pepper
-      ''',
-      'recipe': '''
-        1. Toss carrots and cauliflower with cumin, olive oil, salt, and pepper.
-        2. Roast in the oven until tender.
-        3. Serve as a side dish.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch5.jpeg',
-      'title': 'Amatriciana',
-      'ingredients': '''
-        Pasta
-        Pancetta or Guanciale
-        Tomatoes
-        Onion
-        Pecorino Cheese
-      ''',
-      'recipe': '''
-        1. Cook pasta until al dente.
-        2. Sauté pancetta or guanciale and onion in a pan.
-        3. Add tomatoes and simmer.
-        4. Toss pasta with the sauce and top with Pecorino cheese.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch6.jpeg',
-      'title': 'Sautéed Shrimp',
-      'ingredients': '''
-        Shrimp
-        Garlic
-        Butter
-        Lemon Juice
-        Parsley
-      ''',
-      'recipe': '''
-        1. Sauté shrimp and garlic in butter.
-        2. Add lemon juice and parsley.
-        3. Cook until shrimp turn pink.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch7.jpeg',
-      'title': 'Healthy Pasta',
-      'ingredients': '''
-        Whole Wheat Pasta
-        Broccoli
-        Cherry Tomatoes
-        Olive Oil
-        Garlic
-      ''',
-      'recipe': '''
-        1. Cook whole wheat pasta.
-        2. Sauté broccoli, cherry tomatoes, and garlic in olive oil.
-        3. Toss with cooked pasta.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch8.png',
-      'title': 'Spaghetti',
-      'ingredients': '''
-        Spaghetti
-        Tomato Sauce
-        Ground Beef (optional)
-        Parmesan Cheese
-      ''',
-      'recipe': '''
-        1. Cook spaghetti.
-        2. If desired, brown ground beef and mix with tomato sauce.
-        3. Serve spaghetti with sauce and Parmesan cheese.
-      ''',
-    },
-  ];
-  
- 
+  bool _isWidgetMounted = true;
   SharedPreferences? _prefs;
-  //imageData.shuffle();
+  List<String> favoriteImages = [];
+  List<Map<String, String>> imageData = [];
+  List<Map<String, dynamic>> filteredImageData = [];
+  TextEditingController searchController = TextEditingController();
+  List<String> favoriteRecipes = [];
+
   @override
   void initState() {
     super.initState();
     filteredImageData = List.from(imageData);
+    _isWidgetMounted = true;
     _loadFavoriteImages();
+    _fetchSnacks();
+  }
+
+  @override
+  void dispose() {
+    _isWidgetMounted = false;
+    super.dispose();
+  }
+
+  void toggleFavorite(String imagePath) {
+    setState(() {
+      if (favoriteImages.contains(imagePath)) {
+        favoriteImages.remove(imagePath);
+      } else {
+        favoriteImages.add(imagePath);
+      }
+      _prefs?.setStringList('lunchFavoriteImages', favoriteImages);
+    });
   }
 
   Future<void> _loadFavoriteImages() async {
     _prefs = await SharedPreferences.getInstance();
-    final favoriteImagesList = _prefs?.getStringList('lunchFavoriteImages') ?? [];
+    final favoriteImagesList =
+        _prefs?.getStringList('lunchFavoriteImages') ?? [];
     setState(() {
       favoriteImages = favoriteImagesList;
     });
   }
-  // List to store the favorite images
-  List<String> favoriteImages = [];
-  List<String> favoriteRecipes = [];
 
   Future<void> _loadFavoriteRecipes() async {
     favoriteRecipes = await FavoriteRecipes.getFavoriteRecipes();
@@ -366,25 +70,56 @@ class _LunchPageState extends State<LunchPage> {
     await FavoriteRecipes.saveFavoriteRecipes(favoriteRecipes);
   }
 
+  Future<void> _fetchSnacks() async {
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child('lunch');
+      final listResult = await storageRef.listAll();
 
-  List<Map<String, String>> filteredImageData = [];
-  TextEditingController searchController = TextEditingController();
+      List<Future> futures = [];
 
-  void toggleFavorite(String imagePath) async {
-    setState(() {
-      if (favoriteImages.contains(imagePath)) {
-        favoriteImages.remove(imagePath);
-      } else {
-        favoriteImages.add(imagePath);
+      for (var item in listResult.items) {
+        futures.add(_fetchAndAddSnackData(item));
       }
-    });
 
-    // Save the updated list of favorite images to SharedPreferences
-    await _prefs?.setStringList('lunchFavoriteImages', favoriteImages);
+      await Future.wait(futures);
+
+      if (_isWidgetMounted) {
+        setState(() {
+          filteredImageData = List.from(imageData);
+        });
+      }
+    } catch (e) {
+      print("Error fetching lunch: $e");
+    }
   }
 
+  Future<void> _fetchAndAddSnackData(Reference item) async {
+    final url = await item.getDownloadURL();
+    final path = item.fullPath;
+    final response = await http.get(
+      Uri.parse('https://studentfit-api.vercel.app/getRecipes?image_id=$path'),
+    );
 
-  //search
+    if (!mounted) return;
+
+    if (response.statusCode == 200) {
+      final recipeDetails = jsonDecode(response.body)['recipe'];
+      if (!mounted) return;
+      setState(() {
+        imageData.add({
+          'path': url, // The HTTP URL for display purposes.
+          'title': recipeDetails['title'],
+          'ingredients': recipeDetails['ingredients'],
+          'instructions': recipeDetails['instructions'],
+        });
+
+        filteredImageData = List.from(imageData);
+      });
+    } else {
+      print("Failed to fetch recipe data: ${response.body}");
+    }
+  }
+
   void updateSearch(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -392,11 +127,12 @@ class _LunchPageState extends State<LunchPage> {
       } else {
         filteredImageData = imageData
             .where((data) =>
-                data['title']!.toLowerCase().startsWith(query.toLowerCase()))
+                data['title']!.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
   }
+  
 
   //navigation
   void navigateToDetailPage(int index) {
@@ -408,15 +144,13 @@ class _LunchPageState extends State<LunchPage> {
       ),
     );
   }
-  //card images
-  Widget buildCard(String imagePath, String title, bool isFavorite,
+
+  Widget buildCard(Map<String, dynamic> recipeData, bool isFavorite,
       Function() onFavoritePressed) {
-        // ignore: unused_local_variable
-        final isFavorite = favoriteImages.contains(imagePath);
     return Container(
       margin: const EdgeInsets.all(16),
       width: 175.0,
-      height: 175.0,
+      height: 1750.0,
       child: Stack(
         children: [
           Card(
@@ -426,34 +160,34 @@ class _LunchPageState extends State<LunchPage> {
             ),
             child: GestureDetector(
               onTap: () {
-                int index = filteredImageData
-                    .indexWhere((data) => data['path'] == imagePath);
-                navigateToDetailPage(index);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        RecipeDetailPage(recipeData: recipeData),
+                  ),
+                );
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    flex: 3,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10.0),
-                      child: Container(
-                        child: Image.asset(
-                          imagePath,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
+                      child: Image.network(
+                        recipeData['path'],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
                       ),
                     ),
                   ),
-                  SizedBox(height: 1.0),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text(
-                        title,
-                        style: const TextStyle(fontSize: 12.0),
-                      ),
+                    child: Text(
+                      recipeData['title'],
+                      style: TextStyle(
+                          fontSize: 14.0, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],
@@ -461,13 +195,12 @@ class _LunchPageState extends State<LunchPage> {
             ),
           ),
           Positioned(
-            top: -4.0,
-            right: 15.0,
-            child: FavoriteButton(
-           
-              onFavoriteChanged: (bool isCurrentlyFavorite) {
-                toggleFavorite(imagePath);
-              },
+            top: 5.0,
+            right: 5.0,
+            child: IconButton(
+              icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+              color: isFavorite ? Colors.red : Colors.grey,
+              onPressed: onFavoritePressed,
             ),
           ),
         ],
@@ -505,7 +238,7 @@ class _LunchPageState extends State<LunchPage> {
       backgroundColor: Colors.white,
       drawer: buildDrawer(context),
       body: Padding(
-        padding: const EdgeInsets.all(0.0),
+        padding: const EdgeInsets.all(8.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
             double cardWidth = constraints.maxWidth / 2 - 10;
@@ -533,7 +266,7 @@ class _LunchPageState extends State<LunchPage> {
                       Expanded(
                         child: TextField(
                           controller: searchController,
-                          onChanged: (query) => updateSearch(query),
+                          onChanged: updateSearch,
                           decoration: const InputDecoration(
                             border: InputBorder.none,
                             hintText: 'Search',
@@ -561,13 +294,11 @@ class _LunchPageState extends State<LunchPage> {
                     ),
                     itemCount: filteredImageData.length,
                     itemBuilder: (context, index) {
-                      final data = filteredImageData[index];
-                      final imagePath = data['path']!;
-                      final title = data['title']!;
-                      final isFavorite = favoriteImages.contains(imagePath);
-
-                      return buildCard(imagePath, title, isFavorite, () {
-                        toggleFavorite(imagePath);
+                      final recipeData = filteredImageData[index];
+                      final isFavorite =
+                          favoriteImages.contains(recipeData['path']);
+                      return buildCard(recipeData, isFavorite, () {
+                        toggleFavorite(recipeData['path']!);
                       });
                     },
                   ),

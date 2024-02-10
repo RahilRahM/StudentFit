@@ -2,16 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:StudentFit/screens/home/home_widgets/app_bar.dart';
 
 class RecipeDetailPage extends StatelessWidget {
-  final Map<String, String> recipeData;
+  final Map<String, dynamic> recipeData;
 
   RecipeDetailPage({required this.recipeData});
 
   @override
   Widget build(BuildContext context) {
-    final String title = recipeData['title']!;
-    final String imagePath = recipeData['path']!;
-    final List<String> ingredients = recipeData['ingredients']!.split('\n');
-    final List<String> instructions = recipeData['recipe']!.split('\n');
+    final String title = recipeData['title'] as String? ?? 'Default Title';
+    final String imagePath = recipeData['path'] as String? ?? 'DefaultImagePath';
+
+    // Safely cast to String and handle null or non-existent values
+    final ingredientsRaw = recipeData['ingredients'] as String?;
+    final instructionsRaw = recipeData['instructions'] as String?;
+
+    // Split the string on '\n', ensuring it's not null first
+    final List<String> ingredients = ingredientsRaw?.split('\\n') ?? ['No ingredients'];
+    final List<String> instructions = instructionsRaw?.split('\\n') ?? ['No instructions'];
 
     return Scaffold(
       appBar: CustomAppBar2(
@@ -27,11 +33,13 @@ class RecipeDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Image.asset(
+            Image.network(
               imagePath,
               fit: BoxFit.cover,
               height: 200.0,
+              errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
             ),
+            
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Center(

@@ -1,11 +1,14 @@
+import 'dart:convert';
 import 'commons.dart';
 import 'favorite_page.dart';
 import 'recipe_detail_page.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../home/home_widgets/app_bar.dart';
 import '../home/home_widgets/side_bar.dart';
+import 'package:StudentFit/screens/food/breakfast.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class SnackPage extends StatefulWidget {
   @override
@@ -13,289 +16,111 @@ class SnackPage extends StatefulWidget {
 }
 
 class _SnackPageState extends State<SnackPage> {
-  
-  // List of image data (path and title)
-  final List<Map<String, String>> imageData = [
-    {
-      'path': 'assets/images/snack1.jpeg',
-      'title': 'Frozen Vanilla Berry Bark',
-      'ingredients': '''
-        Greek Yogurt
-        Mixed Berries
-        Honey
-        Vanilla Extract
-      ''',
-      'recipe': '''
-        1. Mix Greek yogurt, honey, and vanilla extract in a bowl.
-        2. Spread the mixture on a baking sheet.
-        3. Sprinkle mixed berries on top.
-        4. Freeze until solid, then break into pieces.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack2.jpeg',
-      'title': 'Energy Bar',
-      'ingredients': '''
-        Oats
-        Almonds
-        Honey
-        Peanut Butter
-        Chocolate Chips
-      ''',
-      'recipe': '''
-        1. Mix oats, almonds, honey, and peanut butter in a bowl.
-        2. Add chocolate chips and mix well.
-        3. Press the mixture into a baking pan.
-        4. Refrigerate until firm, then cut into bars.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack3.jpeg',
-      'title': 'Apple Peanut Butter',
-      'ingredients': '''
-        Apples
-        Peanut Butter
-        Chocolate Chips
-      ''',
-      'recipe': '''
-        1. Slice apples.
-        2. Spread peanut butter on apple slices.
-        3. Sprinkle chocolate chips on top.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack4.jpeg',
-      'title': 'Frozen Yogurt',
-      'ingredients': '''
-        Greek Yogurt
-        Honey
-        Berries
-      ''',
-      'recipe': '''
-        1. Mix Greek yogurt and honey in a bowl.
-        2. Add berries and mix well.
-        3. Freeze until firm.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack5.png',
-      'title': 'Energy Bar',
-      'ingredients': '''
-        Oats
-        Almonds
-        Honey
-        Peanut Butter
-        Chocolate Chips
-      ''',
-      'recipe': '''
-        1. Mix oats, almonds, honey, and peanut butter in a bowl.
-        2. Add chocolate chips and mix well.
-        3. Press the mixture into a baking pan.
-        4. Refrigerate until firm, then cut into bars.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack6.jpeg',
-      'title': 'Healthy Cookies',
-      'ingredients': '''
-        Rolled Oats
-        Banana
-        Peanut Butter
-        Chocolate Chips
-      ''',
-      'recipe': '''
-        1. Mash bananas in a bowl.
-        2. Add rolled oats, peanut butter, and chocolate chips.
-        3. Mix well and form into cookies.
-        4. Bake in the oven until golden brown.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack7.jpeg',
-      'title': 'Fruits',
-      'ingredients': '''
-        Assorted Fruits (e.g., Strawberries, Grapes, Kiwi)
-      ''',
-      'recipe': '''
-        1. Wash and chop assorted fruits.
-        2. Arrange them on a plate.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack8.jpeg',
-      'title': 'Greek Yogurt Brownies',
-      'ingredients': '''
-        Greek Yogurt
-        Cocoa Powder
-        Honey
-        Chocolate Chips
-      ''',
-      'recipe': '''
-        1. Mix Greek yogurt, cocoa powder, honey, and chocolate chips in a bowl.
-        2. Pour into a baking pan and spread evenly.
-        3. Bake in the oven until set.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack1.jpeg',
-      'title': 'Frozen Vanilla Berry Bark',
-      'ingredients': '''
-        Greek Yogurt
-        Mixed Berries
-        Honey
-        Vanilla Extract
-      ''',
-      'recipe': '''
-        1. Mix Greek yogurt, honey, and vanilla extract in a bowl.
-        2. Spread the mixture on a baking sheet.
-        3. Sprinkle mixed berries on top.
-        4. Freeze until solid, then break into pieces.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack2.jpeg',
-      'title': 'Energy Bar',
-      'ingredients': '''
-        Oats
-        Almonds
-        Honey
-        Peanut Butter
-        Chocolate Chips
-      ''',
-      'recipe': '''
-        1. Mix oats, almonds, honey, and peanut butter in a bowl.
-        2. Add chocolate chips and mix well.
-        3. Press the mixture into a baking pan.
-        4. Refrigerate until firm, then cut into bars.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack3.jpeg',
-      'title': 'Apple Peanut Butter',
-      'ingredients': '''
-        Apples
-        Peanut Butter
-        Chocolate Chips
-      ''',
-      'recipe': '''
-        1. Slice apples.
-        2. Spread peanut butter on apple slices.
-        3. Sprinkle chocolate chips on top.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack4.jpeg',
-      'title': 'Frozen Yogurt',
-      'ingredients': '''
-        Greek Yogurt
-        Honey
-        Berries
-      ''',
-      'recipe': '''
-        1. Mix Greek yogurt and honey in a bowl.
-        2. Add berries and mix well.
-        3. Freeze until firm.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack5.png',
-      'title': 'Energy Bar',
-      'ingredients': '''
-        Oats
-        Almonds
-        Honey
-        Peanut Butter
-        Chocolate Chips
-      ''',
-      'recipe': '''
-        1. Mix oats, almonds, honey, and peanut butter in a bowl.
-        2. Add chocolate chips and mix well.
-        3. Press the mixture into a baking pan.
-        4. Refrigerate until firm, then cut into bars.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack6.jpeg',
-      'title': 'Healthy Cookies',
-      'ingredients': '''
-        Rolled Oats
-        Banana
-        Peanut Butter
-        Chocolate Chips
-      ''',
-      'recipe': '''
-        1. Mash bananas in a bowl.
-        2. Add rolled oats, peanut butter, and chocolate chips.
-        3. Mix well and form into cookies.
-        4. Bake in the oven until golden brown.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack7.jpeg',
-      'title': 'Fruits',
-      'ingredients': '''
-        Assorted Fruits (e.g., Strawberries, Grapes, Kiwi)
-      ''',
-      'recipe': '''
-        1. Wash and chop assorted fruits.
-        2. Arrange them on a plate.
-      ''',
-    },
-    {
-      'path': 'assets/images/snack8.jpeg',
-      'title': 'Greek Yogurt Brownies',
-      'ingredients': '''
-        Greek Yogurt
-        Cocoa Powder
-        Honey
-        Chocolate Chips
-      ''',
-      'recipe': '''
-        1. Mix Greek yogurt, cocoa powder, honey, and chocolate chips in a bowl.
-        2. Pour into a baking pan and spread evenly.
-        3. Bake in the oven until set.
-      ''',
-    },
-  ];
-
+  bool _isWidgetMounted = true;
   SharedPreferences? _prefs;
-  //imageData.shuffle();
+  List<String> favoriteImages = [];
+  List<Map<String, String>> imageData = [];
+  List<Map<String, dynamic>> filteredImageData = [];
+  TextEditingController searchController = TextEditingController();
+  List<String> favoriteRecipes = [];
+
   @override
   void initState() {
     super.initState();
     filteredImageData = List.from(imageData);
+    _isWidgetMounted = true;
     _loadFavoriteImages();
+    _fetchSnacks();
   }
 
-  Future<void> _loadFavoriteImages() async {
-    _prefs = await SharedPreferences.getInstance();
-    final favoriteImagesList = _prefs?.getStringList('snackFavoriteImages') ?? [];
-    setState(() {
-      favoriteImages = favoriteImagesList;
-    });
+  @override
+  void dispose() {
+    _isWidgetMounted = false;
+    super.dispose();
   }
 
-  // List to store the favorite images
-  List<String> favoriteImages = [];
-  List<Map<String, String>> filteredImageData = [];
-  TextEditingController searchController = TextEditingController();
-
-  void toggleFavorite(String imagePath) async {
+  void toggleFavorite(String imagePath) {
     setState(() {
       if (favoriteImages.contains(imagePath)) {
         favoriteImages.remove(imagePath);
       } else {
         favoriteImages.add(imagePath);
       }
+      _prefs?.setStringList('snackFavoriteImages', favoriteImages);
     });
-
-    // Save the updated list of favorite images to SharedPreferences
-    await _prefs?.setStringList('snackFavoriteImages', favoriteImages);
   }
 
+  Future<void> _loadFavoriteImages() async {
+    _prefs = await SharedPreferences.getInstance();
+    final favoriteImagesList =
+        _prefs?.getStringList('snackFavoriteImages') ?? [];
+    setState(() {
+      favoriteImages = favoriteImagesList;
+    });
+  }
 
+  Future<void> _loadFavoriteRecipes() async {
+    favoriteRecipes = await FavoriteRecipes.getFavoriteRecipes();
+    setState(() {
+      filteredImageData = List.from(imageData);
+    });
+  }
 
-  //search
+  void _saveFavoriteRecipes() async {
+    await FavoriteRecipes.saveFavoriteRecipes(favoriteRecipes);
+  }
+
+  Future<void> _fetchSnacks() async {
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child('snack');
+      final listResult = await storageRef.listAll();
+
+      List<Future> futures = [];
+
+      for (var item in listResult.items) {
+        futures.add(_fetchAndAddSnackData(item));
+      }
+
+      await Future.wait(futures);
+
+      if (_isWidgetMounted) {
+        setState(() {
+          filteredImageData = List.from(imageData);
+        });
+      }
+    } catch (e) {
+
+      print("Error fetching snacks: $e");
+    }
+  }
+
+  Future<void> _fetchAndAddSnackData(Reference item) async {
+    final url = await item.getDownloadURL();
+    final path = item.fullPath;
+    final response = await http.get(
+      Uri.parse('https://studentfit-api.vercel.app/getRecipes?image_id=$path'),
+    );
+
+    if (!mounted) return;
+
+    if (response.statusCode == 200) {
+      final recipeDetails = jsonDecode(response.body)['recipe'];
+      if (!mounted) return;
+      setState(() {
+        imageData.add({
+          'path': url, // The HTTP URL for display purposes.
+          'title': recipeDetails['title'],
+          'ingredients': recipeDetails['ingredients'],
+          'instructions': recipeDetails['instructions'],
+        });
+
+        filteredImageData = List.from(imageData);
+      });
+    } else {
+      print("Failed to fetch recipe data: ${response.body}");
+    }
+  }
+
   void updateSearch(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -303,11 +128,12 @@ class _SnackPageState extends State<SnackPage> {
       } else {
         filteredImageData = imageData
             .where((data) =>
-                data['title']!.toLowerCase().startsWith(query.toLowerCase()))
+                data['title']!.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
   }
+  
 
   //navigation
   void navigateToDetailPage(int index) {
@@ -320,15 +146,12 @@ class _SnackPageState extends State<SnackPage> {
     );
   }
 
-  //card images
-  Widget buildCard(String imagePath, String title, bool isFavorite,
+  Widget buildCard(Map<String, dynamic> recipeData, bool isFavorite,
       Function() onFavoritePressed) {
-        // ignore: unused_local_variable
-        final isFavorite = favoriteImages.contains(imagePath);
     return Container(
       margin: const EdgeInsets.all(16),
       width: 175.0,
-      height: 175.0,
+      height: 1750.0,
       child: Stack(
         children: [
           Card(
@@ -338,34 +161,34 @@ class _SnackPageState extends State<SnackPage> {
             ),
             child: GestureDetector(
               onTap: () {
-                int index = filteredImageData
-                    .indexWhere((data) => data['path'] == imagePath);
-                navigateToDetailPage(index);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        RecipeDetailPage(recipeData: recipeData),
+                  ),
+                );
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    flex: 3,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10.0),
-                      child: Container(
-                        child: Image.asset(
-                          imagePath,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
+                      child: Image.network(
+                        recipeData['path'],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
                       ),
                     ),
                   ),
-                  SizedBox(height: 1.0),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text(
-                        title,
-                        style: const TextStyle(fontSize: 12.0),
-                      ),
+                    child: Text(
+                      recipeData['title'],
+                      style: TextStyle(
+                          fontSize: 14.0, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],
@@ -373,13 +196,12 @@ class _SnackPageState extends State<SnackPage> {
             ),
           ),
           Positioned(
-            top: -4.0,
-            right: 15.0,
-            child: FavoriteButton(
-           
-              onFavoriteChanged: (bool isCurrentlyFavorite) {
-                toggleFavorite(imagePath);
-              },
+            top: 5.0,
+            right: 5.0,
+            child: IconButton(
+              icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+              color: isFavorite ? Colors.red : Colors.grey,
+              onPressed: onFavoritePressed,
             ),
           ),
         ],
@@ -417,7 +239,7 @@ class _SnackPageState extends State<SnackPage> {
       backgroundColor: Colors.white,
       drawer: buildDrawer(context),
       body: Padding(
-        padding: const EdgeInsets.all(0.0),
+        padding: const EdgeInsets.all(8.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
             double cardWidth = constraints.maxWidth / 2 - 10;
@@ -445,7 +267,7 @@ class _SnackPageState extends State<SnackPage> {
                       Expanded(
                         child: TextField(
                           controller: searchController,
-                          onChanged: (query) => updateSearch(query),
+                          onChanged: updateSearch,
                           decoration: const InputDecoration(
                             border: InputBorder.none,
                             hintText: 'Search',
@@ -473,13 +295,11 @@ class _SnackPageState extends State<SnackPage> {
                     ),
                     itemCount: filteredImageData.length,
                     itemBuilder: (context, index) {
-                      final data = filteredImageData[index];
-                      final imagePath = data['path']!;
-                      final title = data['title']!;
-                      final isFavorite = favoriteImages.contains(imagePath);
-
-                      return buildCard(imagePath, title, isFavorite, () {
-                        toggleFavorite(imagePath);
+                      final recipeData = filteredImageData[index];
+                      final isFavorite =
+                          favoriteImages.contains(recipeData['path']);
+                      return buildCard(recipeData, isFavorite, () {
+                        toggleFavorite(recipeData['path']!);
                       });
                     },
                   ),

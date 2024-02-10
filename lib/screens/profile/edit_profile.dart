@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:StudentFit/commons/button.dart';
@@ -8,8 +8,8 @@ import '../../screens/home/home_widgets/app_bar.dart';
 import 'package:email_validator/email_validator.dart';
 import '../../screens/home/home_widgets/side_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../utils/userAuthentication.dart'; // Import UserAuthentication
+
 
 class EditProfilePage extends StatefulWidget {
   final File? image;
@@ -127,8 +127,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> _updateProfile() async {
     if (userId != null) {
       String newName = _nameController.text;
+      // ignore: unused_local_variable
       String newEmail = _emailController.text;
 
+      // ignore: unused_local_variable
       String result =
           await UserAuthentication.updateUserDetails(userId!, newName);
       ScaffoldMessenger.of(context)

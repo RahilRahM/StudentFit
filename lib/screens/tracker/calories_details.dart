@@ -1,171 +1,158 @@
+import 'dart:math';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../home/home_widgets/app_bar.dart';
-import 'package:StudentFit/commons/index.dart';
+import '../home/home_widgets/app_bar.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:StudentFit/screens/food/recipe_detail_page.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class CaloriesDetailPage extends StatelessWidget {
-  final Map<String, String> recipeData;
+  CaloriesDetailPage({Key? key, required Map<String, String> recipeData}) : super(key: key);
 
-  CaloriesDetailPage({required this.recipeData});
-  final List<Map<String, String>> menuList = [
-    {
-      'path': 'assets/images/breakfast.png',
-      'title': 'Smoothie bowl',
-      'energy': '100k',
-      'protein': '15g',
-      'carbs': '58g',
-      'fat': '20g'
-    },
-    {
-      'path': 'assets/images/lunch3.png',
-      'title': 'Cumin-roasted carrot & cauliflower',
-      'energy': '200k',
-      'protein': '25g',
-      'carbs': '30g',
-      'fat': '15g'
-    },
-    {
-      'path': 'assets/images/snack4.jpeg',
-      'title': 'Frozen Vanilla berry bark',
-      'energy': '150k',
-      'protein': '10g',
-      'carbs': '40g',
-      'fat': '18g'
-    },
-    {
-      'path': 'assets/images/dinner3.jpeg',
-      'title': 'Sesame chicken',
-      'energy': '180k',
-      'protein': '20g',
-      'carbs': '45g',
-      'fat': '22g'
-    },
-  ];
+  final firebase_storage.FirebaseStorage storage = firebase_storage.FirebaseStorage.instance;
+
+  Future<String> getRandomImagePath(String mealType) async {
+    final firebase_storage.ListResult result = await storage.ref(mealType).listAll();
+    final List<firebase_storage.Reference> allFiles = result.items;
+    // Ensure you have at least one file in 'allFiles', otherwise this will throw an error.
+    final firebase_storage.Reference randomFile = allFiles[Random().nextInt(allFiles.length)];
+    return await randomFile.getDownloadURL();
+  }
+
+  Future<Map<String, dynamic>> getSavedMenuOrGenerateNew(String mealType) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentTime = DateTime.now();
+    final savedMenuString = prefs.getString('$mealType-savedMenu');
+    final savedMenu = savedMenuString != null ? json.decode(savedMenuString) as Map<String, dynamic> : null;
+    final savedTimestamp = prefs.getString('$mealType-savedMenuTimestamp');
+
+    // If there's a saved menu and the saved timestamp is less than 24 hours ago, use it
+    if (savedMenu != null && savedTimestamp != null && DateTime.parse(savedTimestamp).add(Duration(days: 1)).isAfter(currentTime)) {
+      return savedMenu;
+    } else {
+      // Otherwise, generate a new menu
+      final newMenu = await generateNewMenu(mealType);
+
+      // Save the new menu and the current timestamp
+      await prefs.setString('$mealType-savedMenu', json.encode(newMenu));
+      await prefs.setString('$mealType-savedMenuTimestamp', currentTime.toIso8601String());
+
+      return newMenu;
+    }
+  }
+
+  Future<Map<String, dynamic>> generateNewMenu(String mealType) async {
+    final imagePath = await getRandomImagePath(mealType);
+    
+    // Generate your menu details here. For now, let's assume you just return the image path.
+    final menuData = {
+      'path': imagePath,
+      'title': mealType[0].toUpperCase() + mealType.substring(1),
+      // Add additional details as required
+    };
+    
+    return menuData;
+  }
+  
 
   @override
   Widget build(BuildContext context) {
+    List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
     return Scaffold(
       appBar: CustomAppBar2(
         appBarTitle: 'Suggested Menu',
         showFavoriteIcon: false,
         leadingIcon: Icons.arrow_back_ios,
-        onLeadingPressed: () {
-          Navigator.pop(context);
-        },
+        onLeadingPressed: () => Navigator.pop(context),
         actions: [],
       ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: menuList
-              .map((menuData) => MenuWidget(recipeData: menuData))
-              .toList(),
+          children: mealTypes.map((mealType) {
+            return FutureBuilder(
+              future: getRandomImagePath('$mealType/'),
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                  return MenuWidget(
+                    recipeData: {
+                      'path': snapshot.data!,
+                      'title': mealType[0].toUpperCase() + mealType.substring(1),
+                      'energy': '??k',
+                      'protein': '??g',
+                      'carbs': '??g',
+                      'fat': '??g',
+                    },
+                  );
+                } else if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                return SizedBox();
+              },
+            );
+          }).toList(),
         ),
       ),
     );
   }
 }
 
-class MenuWidget extends StatelessWidget {
-  final Map<String, String> recipeData;
+class MenuWidget extends StatefulWidget {
+  final Map<String, dynamic> recipeData;
 
-  MenuWidget({required this.recipeData});
+  const MenuWidget({required this.recipeData, Key? key}) : super(key: key);
+
+  @override
+  _MenuWidgetState createState() => _MenuWidgetState();
+}
+
+class _MenuWidgetState extends State<MenuWidget> {
+  bool _isTapped = false;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Center(
-            child: Text(
-              recipeData['title']!,
-              style: const TextStyle(
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+    return GestureDetector(
+      onTap: () {
+
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => RecipeDetailPage(recipeData: widget.recipeData),
           ),
-        ),
-        Image.asset(
-          recipeData['path']!,
-          fit: BoxFit.cover,
-          height: 150.0,
-          width: double.infinity, // Adjust the height as needed
-        ),
-        const SizedBox(height: 0.0),
-        Container(
-          width: double.infinity,
-          height: 68,
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(
-              255,
-              237,
-              235,
-              235,
-            ),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
+        );
+      },
+      child: Transform(
+        alignment: Alignment.center,
+        transform: Matrix4.identity()
+          ..setEntry(3, 2, 0.001) // add perspective
+          ..rotateY(_isTapped ? -0.05 : 0), // subtle tilt when tapped
+        child: Card(
+          elevation: 5,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      'Energy',
-                      style: TextStyle(
-                        color: AppColors.redColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Center(
+                  child: Text(
+                    widget.recipeData['title'] ?? '',
+                    style: const TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text('Protein'),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text('Carbs'),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text('Fat'),
-                  ),
-                ],
+                ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      recipeData['energy']!,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.redColor),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(recipeData['protein']!),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(recipeData['carbs']!),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(recipeData['fat']!),
-                  ),
-                ],
+              Image.network(
+                widget.recipeData['path'] ?? '',
+                fit: BoxFit.cover,
+                height: 150.0,
+                width: double.infinity,
               ),
+             
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

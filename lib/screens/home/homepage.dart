@@ -1,7 +1,4 @@
 import '../food/snack.dart';
-import '../food/lunch.dart';
-import '../food/dinner.dart';
-import '../food/recipe.dart';
 import '../food/breakfast.dart';
 import '../profile/profile.dart';
 import 'home_widgets/app_bar.dart';
@@ -14,10 +11,13 @@ import '../analytics/analyticsPage.dart';
 import 'home_widgets/today_for_section.dart';
 import 'home_widgets/looking_for_section.dart';
 import 'home_widgets/daily_advice_section.dart';
+import 'package:StudentFit/screens/food/lunch.dart';
 import 'package:StudentFit/screens/login/login.dart';
 import 'package:StudentFit/screens/schedule/schedulePage.dart';
 import 'package:StudentFit/screens/schedule/calendarPage.dart';
 import 'package:StudentFit/screens/welcomePages/widgets/app_text_styles.dart';
+
+
 
 class HomePage extends StatelessWidget {
   final String appBarTitle;
@@ -30,12 +30,11 @@ class HomePage extends StatelessWidget {
       routes: {
         '/breakfast': (context) => BreakfastPage(),
         '/lunch': (context) => LunchPage(),
-        '/dinner': (context) => DinnerPage(),
         '/snack': (context) => SnackPage(),
         '/homepage': (context) => const HomePage(
               appBarTitle: 'Home',
             ),
-       '/recipepage': (context) => RecipePage(),
+
         '/profile': (context) => ProfilePage(),
         '/logout': (context) => LogInPage(),
         '/calendar': (context) => const CalendarPage(),

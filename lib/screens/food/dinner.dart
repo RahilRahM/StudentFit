@@ -1,12 +1,14 @@
+import 'dart:convert';
 import 'commons.dart';
-import './breakfast.dart';
 import 'favorite_page.dart';
 import 'recipe_detail_page.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../home/home_widgets/app_bar.dart';
 import '../home/home_widgets/side_bar.dart';
+import 'package:StudentFit/screens/food/breakfast.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class DinnerPage extends StatefulWidget {
   @override
@@ -14,437 +16,48 @@ class DinnerPage extends StatefulWidget {
 }
 
 class _DinnerPageState extends State<DinnerPage> {
-
-  // List of image data (path and title)
-  final List<Map<String, String>> imageData= [
-    {
-      'path': 'assets/images/TeriyakiSalmonSushiBowl.jpg',
-      'title': 'Teriyaki Salmon Sushi Bowl',
-      'ingredients': '''
-        Salmon
-        Sushi Rice
-        Teriyaki Sauce
-        Avocado
-        Cucumber
-      ''',
-      'recipe': '''
-        1. Cook salmon and glaze with teriyaki sauce.
-        2. Prepare sushi rice.
-        3. Assemble the bowl with rice, salmon, avocado, and cucumber.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch7.jpeg',
-      'title': 'Healthy Pasta',
-      'ingredients': '''
-        Whole Wheat Pasta
-        Broccoli
-        Cherry Tomatoes
-        Olive Oil
-        Garlic
-      ''',
-      'recipe': '''
-        1. Cook whole wheat pasta.
-        2. Sauté broccoli, cherry tomatoes, and garlic in olive oil.
-        3. Toss with cooked pasta.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch8.png',
-      'title': 'Spaghetti',
-      'ingredients': '''
-        Spaghetti
-        Tomato Sauce
-        Ground Beef (optional)
-        Parmesan Cheese
-      ''',
-      'recipe': '''
-        1. Cook spaghetti.
-        2. If desired, brown ground beef and mix with tomato sauce.
-        3. Serve spaghetti with sauce and Parmesan cheese.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch1.png',
-      'title': 'Bean Salad',
-      'ingredients': '''
-        Canned Beans
-        Cherry Tomatoes
-        Red Onion
-        Olive Oil
-        Balsamic Vinegar
-      ''',
-      'recipe': '''
-        1. Mix canned beans, cherry tomatoes, and red onion in a bowl.
-        2. Drizzle with olive oil and balsamic vinegar.
-        3. Toss well and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/lunch2.jpeg',
-      'title': 'Mediterranean Tuna Salad',
-      'ingredients': '''
-        Tuna
-        Cucumber
-        Cherry Tomatoes
-        Red Onion
-        Olive Oil
-      ''',
-      'recipe': '''
-        1. Combine tuna, cucumber, cherry tomatoes, and red onion in a bowl.
-        2. Drizzle with olive oil and toss to combine.
-        3. Serve as a refreshing salad.
-      ''',
-    },
-    {
-      'path': 'assets/images/LoadedSpicyShrimpBowl.jpg',
-      'title': 'Loaded Spicy Shrimp Bowl',
-      'ingredients': '''
-        Shrimp
-        Rice
-        Spices
-        Black Beans
-        Corn
-      ''',
-      'recipe': '''
-        1. Season and cook shrimp with spices.
-        2. Cook rice and top with black beans and corn.
-        3. Add spicy shrimp on top.
-      ''',
-    },
-    {
-      'path': 'assets/images/zucchinislice.jpg',
-      'title': 'Zucchini Slice',
-      'ingredients': '''
-        Zucchini
-        Eggs
-        Flour
-        Cheese
-        Bacon
-      ''',
-      'recipe': '''
-        1. Grate zucchini and mix with eggs, flour, cheese, and bacon.
-        2. Bake until golden brown.
-      ''',
-    },
-    {
-      'path': 'assets/images/besteasypumpkinsouprecipe.jpeg',
-      'title': 'Best Easy Pumpkin Soup Recipe',
-      'ingredients': '''
-        Pumpkin
-        Onion
-        Garlic
-        Vegetable Broth
-        Cream
-      ''',
-      'recipe': '''
-        1. Sauté onion and garlic, then add pumpkin and vegetable broth.
-        2. Simmer until pumpkin is tender, then blend.
-        3. Stir in cream and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/easyfriedrice.jpeg',
-      'title': 'Easy Fried Rice',
-      'ingredients': '''
-        Rice
-        Vegetables
-        Soy Sauce
-        Eggs
-        Sesame Oil
-      ''',
-      'recipe': '''
-        1. Cook rice and set aside.
-        2. Sauté vegetables, add eggs, then mix in rice and soy sauce.
-        3. Drizzle with sesame oil and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/classicshepherdspie.jpg',
-      'title': 'Classic Shepherd Pie',
-      'ingredients': '''
-        Ground Beef
-        Vegetables
-        Mashed Potatoes
-        Gravy
-      ''',
-      'recipe': '''
-        1. Brown ground beef, add vegetables, and top with mashed potatoes.
-        2. Bake until golden and serve with gravy.
-      ''',
-    },
-    {
-      'path': 'assets/images/quiche.jpeg',
-      'title': 'Quiche',
-      'ingredients': '''
-        Pie Crust
-        Eggs
-        Milk
-        Cheese
-        Vegetables
-      ''',
-      'recipe': '''
-        1. Line pie crust with vegetables and cheese.
-        2. Whisk eggs and milk, then pour into crust.
-        3. Bake until set and golden.
-      ''',
-    },
-    {
-      'path': 'assets/images/basicchickenandvegetablestirfry.jpeg',
-      'title': 'Basic Chicken and Vegetable Stir Fry',
-      'ingredients': '''
-        Chicken
-        Vegetables
-        Soy Sauce
-        Ginger
-        Garlic
-      ''',
-      'recipe': '''
-        1. Stir fry chicken and vegetables with ginger and garlic.
-        2. Add soy sauce for flavor.
-        3. Serve over rice or noodles.
-      ''',
-    },
-    {
-      'path': 'assets/images/easybutterchicken.jpg',
-      'title': 'Easy Butter Chicken',
-      'ingredients': '''
-        Chicken
-        Butter
-        Tomatoes
-        Cream
-        Spices
-      ''',
-      'recipe': '''
-        1. Sauté chicken in butter, add tomatoes, cream, and spices.
-        2. Simmer until the sauce thickens and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/spaghettibolognese.jpeg',
-      'title': 'Spaghetti Bolognese',
-      'ingredients': '''
-        Ground Beef
-        Tomatoes
-        Onion
-        Spaghetti
-        Parmesan Cheese
-      ''',
-      'recipe': '''
-        1. Brown ground beef and onion, add tomatoes, and simmer.
-        2. Serve over cooked spaghetti with Parmesan cheese.
-      ''',
-    },
-    {
-      'path': 'assets/images/zucchinifritters.jpeg',
-      'title': 'Zucchini Fritters',
-      'ingredients': '''
-        Zucchini
-        Eggs
-        Flour
-        Feta Cheese
-        Dill
-      ''',
-      'recipe': '''
-        1. Grate zucchini, mix with eggs, flour, feta cheese, and dill.
-        2. Fry until golden brown and serve.
-      ''',
-    },
- 
-    {
-      'path': 'assets/images/TeriyakiSalmonSushiBowl.jpg',
-      'title': 'Teriyaki Salmon Sushi Bowl',
-      'ingredients': '''
-        Salmon
-        Sushi Rice
-        Teriyaki Sauce
-        Avocado
-        Cucumber
-      ''',
-      'recipe': '''
-        1. Cook salmon and glaze with teriyaki sauce.
-        2. Prepare sushi rice.
-        3. Assemble the bowl with rice, salmon, avocado, and cucumber.
-      ''',
-    },
-    {
-      'path': 'assets/images/LoadedSpicyShrimpBowl.jpg',
-      'title': 'Loaded Spicy Shrimp Bowl',
-      'ingredients': '''
-        Shrimp
-        Rice
-        Spices
-        Black Beans
-        Corn
-      ''',
-      'recipe': '''
-        1. Season and cook shrimp with spices.
-        2. Cook rice and top with black beans and corn.
-        3. Add spicy shrimp on top.
-      ''',
-    },
-    {
-      'path': 'assets/images/zucchinislice.jpg',
-      'title': 'Zucchini Slice',
-      'ingredients': '''
-        Zucchini
-        Eggs
-        Flour
-        Cheese
-        Bacon
-      ''',
-      'recipe': '''
-        1. Grate zucchini and mix with eggs, flour, cheese, and bacon.
-        2. Bake until golden brown.
-      ''',
-    },
-    {
-      'path': 'assets/images/besteasypumpkinsouprecipe.jpeg',
-      'title': 'Best Easy Pumpkin Soup Recipe',
-      'ingredients': '''
-        Pumpkin
-        Onion
-        Garlic
-        Vegetable Broth
-        Cream
-      ''',
-      'recipe': '''
-        1. Sauté onion and garlic, then add pumpkin and vegetable broth.
-        2. Simmer until pumpkin is tender, then blend.
-        3. Stir in cream and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/easyfriedrice.jpeg',
-      'title': 'Easy Fried Rice',
-      'ingredients': '''
-        Rice
-        Vegetables
-        Soy Sauce
-        Eggs
-        Sesame Oil
-      ''',
-      'recipe': '''
-        1. Cook rice and set aside.
-        2. Sauté vegetables, add eggs, then mix in rice and soy sauce.
-        3. Drizzle with sesame oil and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/classicshepherdspie.jpg',
-      'title': 'Classic Shepherd Pie',
-      'ingredients': '''
-        Ground Beef
-        Vegetables
-        Mashed Potatoes
-        Gravy
-      ''',
-      'recipe': '''
-        1. Brown ground beef, add vegetables, and top with mashed potatoes.
-        2. Bake until golden and serve with gravy.
-      ''',
-    },
-    {
-      'path': 'assets/images/quiche.jpeg',
-      'title': 'Quiche',
-      'ingredients': '''
-        Pie Crust
-        Eggs
-        Milk
-        Cheese
-        Vegetables
-      ''',
-      'recipe': '''
-        1. Line pie crust with vegetables and cheese.
-        2. Whisk eggs and milk, then pour into crust.
-        3. Bake until set and golden.
-      ''',
-    },
-    {
-      'path': 'assets/images/basicchickenandvegetablestirfry.jpeg',
-      'title': 'Basic Chicken and Vegetable Stir Fry',
-      'ingredients': '''
-        Chicken
-        Vegetables
-        Soy Sauce
-        Ginger
-        Garlic
-      ''',
-      'recipe': '''
-        1. Stir fry chicken and vegetables with ginger and garlic.
-        2. Add soy sauce for flavor.
-        3. Serve over rice or noodles.
-      ''',
-    },
-    {
-      'path': 'assets/images/easybutterchicken.jpg',
-      'title': 'Easy Butter Chicken',
-      'ingredients': '''
-        Chicken
-        Butter
-        Tomatoes
-        Cream
-        Spices
-      ''',
-      'recipe': '''
-        1. Sauté chicken in butter, add tomatoes, cream, and spices.
-        2. Simmer until the sauce thickens and serve.
-      ''',
-    },
-    {
-      'path': 'assets/images/spaghettibolognese.jpeg',
-      'title': 'Spaghetti Bolognese',
-      'ingredients': '''
-        Ground Beef
-        Tomatoes
-        Onion
-        Spaghetti
-        Parmesan Cheese
-      ''',
-      'recipe': '''
-        1. Brown ground beef and onion, add tomatoes, and simmer.
-        2. Serve over cooked spaghetti with Parmesan cheese.
-      ''',
-    },
-    {
-      'path': 'assets/images/zucchinifritters.jpeg',
-      'title': 'Zucchini Fritters',
-      'ingredients': '''
-        Zucchini
-        Eggs
-        Flour
-        Feta Cheese
-        Dill
-      ''',
-      'recipe': '''
-        1. Grate zucchini, mix with eggs, flour, feta cheese, and dill.
-        2. Fry until golden brown and serve.
-      ''',
-    },
-   
-   
-  ];
-  
-
+  bool _isWidgetMounted = true;
   SharedPreferences? _prefs;
-  //imageData.shuffle();
+  List<String> favoriteImages = [];
+  List<Map<String, String>> imageData = [];
+  List<Map<String, dynamic>> filteredImageData = [];
+  TextEditingController searchController = TextEditingController();
+  List<String> favoriteRecipes = [];
+
   @override
   void initState() {
     super.initState();
     filteredImageData = List.from(imageData);
+    _isWidgetMounted = true;
     _loadFavoriteImages();
+    _fetchSnacks();
+  }
+
+  @override
+  void dispose() {
+    _isWidgetMounted = false;
+    super.dispose();
+  }
+
+  void toggleFavorite(String imagePath) {
+    setState(() {
+      if (favoriteImages.contains(imagePath)) {
+        favoriteImages.remove(imagePath);
+      } else {
+        favoriteImages.add(imagePath);
+      }
+      _prefs?.setStringList('dinnerFavoriteImages', favoriteImages);
+    });
   }
 
   Future<void> _loadFavoriteImages() async {
     _prefs = await SharedPreferences.getInstance();
-    final favoriteImagesList = _prefs?.getStringList('dinnerFavoriteImages') ?? [];
+    final favoriteImagesList =
+        _prefs?.getStringList('dinnerFavoriteImages') ?? [];
     setState(() {
       favoriteImages = favoriteImagesList;
     });
   }
-  // List to store the favorite images
-  List<String> favoriteImages = [];
-  List<String> favoriteRecipes = [];
 
   Future<void> _loadFavoriteRecipes() async {
     favoriteRecipes = await FavoriteRecipes.getFavoriteRecipes();
@@ -457,25 +70,57 @@ class _DinnerPageState extends State<DinnerPage> {
     await FavoriteRecipes.saveFavoriteRecipes(favoriteRecipes);
   }
 
+  Future<void> _fetchSnacks() async {
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child('dinner');
+      final listResult = await storageRef.listAll();
 
-  List<Map<String, String>> filteredImageData = [];
-  TextEditingController searchController = TextEditingController();
+      List<Future> futures = [];
 
-  void toggleFavorite(String imagePath) async {
-    setState(() {
-      if (favoriteImages.contains(imagePath)) {
-        favoriteImages.remove(imagePath);
-      } else {
-        favoriteImages.add(imagePath);
+      for (var item in listResult.items) {
+        futures.add(_fetchAndAddSnackData(item));
       }
-    });
 
-    // Save the updated list of favorite images to SharedPreferences
-    await _prefs?.setStringList('dinnerFavoriteImages', favoriteImages);
+      await Future.wait(futures);
+
+      if (_isWidgetMounted) {
+        setState(() {
+          filteredImageData = List.from(imageData);
+        });
+      }
+    } catch (e) {
+      print("Error fetching dinner: $e");
+     
+    }
   }
 
+  Future<void> _fetchAndAddSnackData(Reference item) async {
+    final url = await item.getDownloadURL();
+    final path = item.fullPath;
+    final response = await http.get(
+      Uri.parse('https://studentfit-api.vercel.app/getRecipes?image_id=$path'),
+    );
 
-  //search
+    if (!mounted) return;
+
+    if (response.statusCode == 200) {
+      final recipeDetails = jsonDecode(response.body)['recipe'];
+      if (!mounted) return;
+      setState(() {
+        imageData.add({
+          'path': url, 
+          'title': recipeDetails['title'],
+          'ingredients': recipeDetails['ingredients'],
+          'instructions': recipeDetails['instructions'],
+        });
+
+        filteredImageData = List.from(imageData);
+      });
+    } else {
+      print("Failed to fetch recipe data: ${response.body}");
+    }
+  }
+
   void updateSearch(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -483,11 +128,12 @@ class _DinnerPageState extends State<DinnerPage> {
       } else {
         filteredImageData = imageData
             .where((data) =>
-                data['title']!.toLowerCase().startsWith(query.toLowerCase()))
+                data['title']!.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
   }
+  
 
   //navigation
   void navigateToDetailPage(int index) {
@@ -499,13 +145,13 @@ class _DinnerPageState extends State<DinnerPage> {
       ),
     );
   }
-  //image card
-  Widget buildCard(String imagePath, String title, bool isFavorite,
+
+  Widget buildCard(Map<String, dynamic> recipeData, bool isFavorite,
       Function() onFavoritePressed) {
     return Container(
       margin: const EdgeInsets.all(16),
       width: 175.0,
-      height: 175.0,
+      height: 1750.0,
       child: Stack(
         children: [
           Card(
@@ -515,34 +161,34 @@ class _DinnerPageState extends State<DinnerPage> {
             ),
             child: GestureDetector(
               onTap: () {
-                int index = filteredImageData
-                    .indexWhere((data) => data['path'] == imagePath);
-                navigateToDetailPage(index);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        RecipeDetailPage(recipeData: recipeData),
+                  ),
+                );
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    flex: 3,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10.0),
-                      child: Container(
-                        child: Image.asset(
-                          imagePath,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
+                      child: Image.network(
+                        recipeData['path'],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 1.0),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text(
-                        title,
-                        style: const TextStyle(fontSize: 12.0),
-                      ),
+                    child: Text(
+                      recipeData['title'],
+                      style: TextStyle(
+                          fontSize: 14.0, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],
@@ -550,12 +196,12 @@ class _DinnerPageState extends State<DinnerPage> {
             ),
           ),
           Positioned(
-            top: -4.0,
-            right: 15.0,
-            child: FavoriteButton(
-              onFavoriteChanged: (bool isFavorite) {
-                onFavoritePressed();
-              },
+            top: 5.0,
+            right: 5.0,
+            child: IconButton(
+              icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+              color: isFavorite ? Colors.red : Colors.grey,
+              onPressed: onFavoritePressed,
             ),
           ),
         ],
@@ -563,7 +209,6 @@ class _DinnerPageState extends State<DinnerPage> {
     );
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -594,7 +239,7 @@ class _DinnerPageState extends State<DinnerPage> {
       backgroundColor: Colors.white,
       drawer: buildDrawer(context),
       body: Padding(
-        padding: const EdgeInsets.all(0.0),
+        padding: const EdgeInsets.all(8.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
             double cardWidth = constraints.maxWidth / 2 - 10;
@@ -622,7 +267,7 @@ class _DinnerPageState extends State<DinnerPage> {
                       Expanded(
                         child: TextField(
                           controller: searchController,
-                          onChanged: (query) => updateSearch(query),
+                          onChanged: updateSearch,
                           decoration: const InputDecoration(
                             border: InputBorder.none,
                             hintText: 'Search',
@@ -650,13 +295,11 @@ class _DinnerPageState extends State<DinnerPage> {
                     ),
                     itemCount: filteredImageData.length,
                     itemBuilder: (context, index) {
-                      final data = filteredImageData[index];
-                      final imagePath = data['path']!;
-                      final title = data['title']!;
-                      final isFavorite = favoriteImages.contains(imagePath);
-
-                      return buildCard(imagePath, title, isFavorite, () {
-                        toggleFavorite(imagePath);
+                      final recipeData = filteredImageData[index];
+                      final isFavorite =
+                          favoriteImages.contains(recipeData['path']);
+                      return buildCard(recipeData, isFavorite, () {
+                        toggleFavorite(recipeData['path']!);
                       });
                     },
                   ),

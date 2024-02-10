@@ -111,9 +111,8 @@ Widget buildCard(String imagePath, String title, bool isFavorite,
   );
 }
 
-//images without favorite icon
-Widget buildCardWithoutFavoriteIcon(Map<String, String> imageData) {
-  final String imagePath = imageData['path']!;
+Widget buildCardWithoutFavoriteIcon(Map<String, dynamic> imageData) {
+  final String imagePath = imageData['path'] as String; // Cast as String
 
   return Container(
     margin: const EdgeInsets.all(16),
@@ -135,12 +134,13 @@ Widget buildCardWithoutFavoriteIcon(Map<String, String> imageData) {
               flex: 3,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10.0),
-                child: Container(
-                  child: Image.asset(
-                    imagePath,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  ),
+                child: Image.network( // Changed to Image.network
+                  imagePath,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(child: Text('Image not available'));
+                  },
                 ),
               ),
             ),
@@ -149,7 +149,7 @@ Widget buildCardWithoutFavoriteIcon(Map<String, String> imageData) {
               padding: const EdgeInsets.all(8.0),
               child: Center(
                 child: Text(
-                  imageData['title']!,
+                  imageData['title'] as String, // Cast as String
                   style: const TextStyle(fontSize: 12.0),
                 ),
               ),
@@ -160,6 +160,7 @@ Widget buildCardWithoutFavoriteIcon(Map<String, String> imageData) {
     ),
   );
 }
+
 
 //empty favorites error
 Widget buildEmptyFavoritesDialog(BuildContext context) {

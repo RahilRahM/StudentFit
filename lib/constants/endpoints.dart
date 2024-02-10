@@ -8,3 +8,5 @@ const api_endpoint_user_insert_age = 'https://studentfit-api.vercel.app/users.in
 const api_endpoint_user_insert_height = 'https://studentfit-api.vercel.app/users.insertHeight';
 const api_endpoint_user_insert_weight = 'https://studentfit-api.vercel.app/users.insertWeight';
 const api_endpoint_user_update = 'https://studentfit-api.vercel.app/users.update';
+const api_endpoint_get_recipes = 'https://studentfit-api.vercel.app/getRecipes';
+
