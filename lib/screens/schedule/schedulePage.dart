@@ -111,22 +111,40 @@ class _ScheduleState extends State<Schedule>
     await prefs.setStringList('savedEvents', savedEvents);
   }
 
-  Future<void> _deleteEvent(CalendarEventData<Event> event) async {
+  Future<void> _deleteEvent(CalendarEventData<Event> eventToDelete) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
-      // Filter out the event and its recurrences by matching eventId.
+      bool needsUpdate = false;
+  
       savedEvents.removeWhere((jsonString) {
         final jsonData = jsonDecode(jsonString);
         final savedEvent = jsonToEvent(jsonData);
-        return savedEvent.event?.id == event.event?.id; // Use eventId to match.
+
+        bool isSameEvent = savedEvent.title == eventToDelete.title &&
+                           savedEvent.description == eventToDelete.description; // Example
+        if (isSameEvent) {
+          needsUpdate = true;
+          return true; // Remove if it's the same event.
+        }
+        return false;
       });
-      await prefs.setStringList('savedEvents', savedEvents);
-      eventController.remove(event); // You might need to adjust this for removing all instances.
+ 
+      if (needsUpdate) {
+        await prefs.setStringList('savedEvents', savedEvents);
+  
+
+        setState(() {
+          widget.eventController.remove(eventToDelete);
+  
+        });
+      }
     } catch (e) {
       print("Error deleting event: $e");
     }
   }
+  
+  
   
 
   Future<void> _loadEvents() async {
