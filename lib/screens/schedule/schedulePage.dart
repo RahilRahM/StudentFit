@@ -115,17 +115,19 @@ class _ScheduleState extends State<Schedule>
     try {
       final prefs = await SharedPreferences.getInstance();
       List<String> savedEvents = prefs.getStringList('savedEvents') ?? [];
+      // Filter out the event and its recurrences by matching eventId.
       savedEvents.removeWhere((jsonString) {
         final jsonData = jsonDecode(jsonString);
         final savedEvent = jsonToEvent(jsonData);
-        return savedEvent.date == event.date && savedEvent.title == event.title;
+        return savedEvent.event?.id == event.event?.id; // Use eventId to match.
       });
       await prefs.setStringList('savedEvents', savedEvents);
-      eventController.remove(event);
+      eventController.remove(event); // You might need to adjust this for removing all instances.
     } catch (e) {
       print("Error deleting event: $e");
     }
   }
+  
 
   Future<void> _loadEvents() async {
     try {
